@@ -1,9 +1,15 @@
 @import '../Shared.css';
 
 .root {
-    -fx-base: rgb(50, 50, 50);
-    -fx-background: rgb(50, 50, 50);
-    -fx-control-inner-background: rgb(50, 50, 50);
+    /* Layered dark surfaces inspired by modern editor chrome (concepts only). */
+    -fx-base: #323334;
+    -fx-background: #191A1B;
+    -fx-control-inner-background: #121314;
+    -fx-window-title-bg: #191A1B;
+    -fx-window-title-border: #2A2B2C;
+    -fx-window-title-fg: #CCCCCC;
+    -fx-window-title-fg-inactive: #8C8C8C;
+    -fx-window-btn-hover: rgba(255, 255, 255, 0.08);
 }
 
 /* Buttons */
@@ -184,5 +190,4 @@
 .copilot-model-selector .text-input {
     -fx-text-fill: #d4d4d4;
     -fx-background-color: rgb(40, 40, 40);
-}
 }

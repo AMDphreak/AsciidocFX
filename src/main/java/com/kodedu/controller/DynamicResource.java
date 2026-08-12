@@ -60,6 +60,14 @@ public class DynamicResource {
                 Optional<String> stylesheetDefault = Optional.ofNullable(locationConfigBean.getStylesheetOverrides());
                 processResource(payload, stylesheetDefault);
                 return;
+            } else if (p.contains("asciidoctor-preview-theme.css")) {
+                Path previewTheme = controller.getPreviewThemeStylesheet();
+                if (Files.exists(previewTheme)) {
+                    fileService.processFile(payload, previewTheme);
+                } else {
+                    fileService.processFile(payload, controller.getConfigPath().resolve("public").resolve("css/asciidoctor-preview-theme-light.css"));
+                }
+                return;
             }
         }
 

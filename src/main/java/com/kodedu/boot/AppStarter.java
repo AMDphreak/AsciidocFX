@@ -3,6 +3,7 @@ package com.kodedu.boot;
 import com.install4j.api.launcher.StartupNotification;
 import com.kodedu.config.ConfigurationService;
 import com.kodedu.controller.ApplicationController;
+import com.kodedu.component.WindowChrome;
 import com.kodedu.helper.IOHelper;
 import com.kodedu.helper.TaskbarHelper;
 import com.kodedu.other.RenderResult;
@@ -82,6 +83,9 @@ public class AppStarter extends Application {
     public void start(final Stage stage) {
         this.startTime = System.currentTimeMillis();
         stage.setTitle("AsciidocFX");
+        if (!isHeadless()) {
+            WindowChrome.prepareStage(stage);
+        }
         logoImage = setApplicationIcon(stage);
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> logger.error(e.getMessage(), e));
         Thread.startVirtualThread(() -> {
@@ -96,6 +100,10 @@ public class AppStarter extends Application {
             }
         });
 
+    }
+
+    private static boolean isHeadless() {
+        return config != null && config.headless;
     }
 
     private static void setupMonocle() {
@@ -180,11 +188,12 @@ public class AppStarter extends Application {
         final FXMLLoader parentLoader = new FXMLLoader();
         parentLoader.setControllerFactory(context::getBean);
 
-        Parent root;
+        Parent content;
         try (InputStream sceneStream = AppStarter.class.getResourceAsStream("/scenes/AsciidocFX_Scene.fxml")) {
-            root = parentLoader.load(sceneStream);
+            content = parentLoader.load(sceneStream);
         }
 
+        Parent root = isHeadless() ? content : WindowChrome.decorate(stage, content);
         Scene scene = new Scene(root);
         threadService.runActionLater(stage::setScene, scene);
 
@@ -324,13 +333,12 @@ public class AppStarter extends Application {
     }
 
     private void setMaximized() {
-
         Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         stage.setX(bounds.getMinX());
         stage.setY(bounds.getMinY());
         stage.setWidth(bounds.getWidth());
         stage.setHeight(bounds.getHeight());
-
+        stage.setMaximized(true);
     }
 
     private void registerStartupListener(CmdlineConfig config) {

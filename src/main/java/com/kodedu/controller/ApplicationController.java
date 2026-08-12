@@ -229,6 +229,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     @Autowired
     public HtmlPane htmlPane;
 
+    private volatile Path previewThemeStylesheet;
+
     @Autowired
     public AsciidocAsciidoctorjConverter asciidoctorjConverter;
 
@@ -919,6 +921,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         tabService.initializeTabChangeListener(tabPane);
         threadService.runActionLater(() -> {
             detachStage = new Stage();
+            WindowChrome.prepareStage(detachStage);
             detachStage.setTitle("AsciidocFX Preview");
             detachStage.initModality(Modality.WINDOW_MODAL);
             detachStage.setAlwaysOnTop(true);
@@ -1016,7 +1019,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 AnchorPane anchorPane = new AnchorPane();
                 FxHelper.fitToParent(anchorPane);
                 anchorPane.getChildren().add(previewBox);
-                Scene scene = new Scene(anchorPane);
+                Parent chromeRoot = WindowChrome.decorate(detachStage, anchorPane);
+                Scene scene = new Scene(chromeRoot);
                 detachStage.setScene(scene);
                 applyCurrentTheme(detachStage);
                 applyCurrentFontFamily(detachStage);
@@ -1430,15 +1434,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             dividers.get(1).setPosition(editorConfigBean.getSecondSplitter());
         }
 
-        String aceTheme = editorConfigBean.getAceTheme().get(0);
-
         editorConfigBean.getEditorTheme().stream().findFirst().ifPresent(theme -> {
             applyTheme(theme, getAllStages());
-            editorConfigBean.updateAceTheme(aceTheme);
-        });
-
-        editorConfigBean.getAceTheme().stream().findFirst().ifPresent(ace -> {
-            applyForAllEditorPanes(editorPane -> editorPane.setTheme(ace));
+            applyForAllEditorPanes(editorPane -> editorPane.setTheme(theme.getAceTheme()));
         });
 
         applyForAllEditorPanes(editorPane -> editorPane.setShowGutter(editorConfigBean.getShowGutter()));
@@ -3285,7 +3283,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 for (Stage stage : stages) {
                     if (nonNull(stage) && nonNull(stage.getScene())) {
                         Scene stageScene = stage.getScene();
-                        Parent root = stageScene.getRoot();
                         ObservableList<String> stylesheets = stageScene.getStylesheets();
                         stylesheets.clear();
                         stylesheets.add(themeUri);
@@ -3303,11 +3300,31 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 editorConfigBean.updateAceTheme(aceTheme);
 
                 terminalConfigBean.changeTheme(theme);
+                applyForEachTerminal(terminalTab ->
+                        terminalTab.getTerminal().updatePrefs(terminalConfigBean.createTerminalConfig()));
+
+                applyPreviewTheme(theme);
 
             } catch (Exception e) {
                 logger.error("Error occured while setting new theme {}", theme);
             }
         });
+    }
+
+    public Path getPreviewThemeStylesheet() {
+        if (nonNull(previewThemeStylesheet) && Files.exists(previewThemeStylesheet)) {
+            return previewThemeStylesheet;
+        }
+        return getConfigPath().resolve("public/css/asciidoctor-preview-theme-light.css");
+    }
+
+    private void applyPreviewTheme(EditorConfigBean.Theme theme) {
+        boolean dark = "Dark".equalsIgnoreCase(theme.getThemeName());
+        previewThemeStylesheet = getConfigPath().resolve(
+                dark ? "public/css/asciidoctor-dark.css" : "public/css/asciidoctor-preview-theme-light.css");
+        if (nonNull(htmlPane)) {
+            htmlPane.loadInitialUrl();
+        }
     }
 
     public void setAsciidocTableScene(Scene asciidocTableScene) {
