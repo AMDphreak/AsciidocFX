@@ -50,6 +50,8 @@ nashorn_code_cache
 *.p12
 
 jmods/mac-m1-jars/
+jmods/windows-jars/
+
 
 jars/
 
