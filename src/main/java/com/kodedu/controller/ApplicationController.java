@@ -1575,6 +1575,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         if (nonNull(previewDarkToggle)) {
             previewDarkToggle.setFocusTraversable(false);
+            previewDarkToggle.setText("");
             previewDarkToggle.selectedProperty().bindBidirectional(editorConfigBean.previewDarkProperty());
             syncPreviewDarkToggle();
         }
@@ -3336,7 +3337,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             return;
         }
         boolean dark = editorConfigBean.isPreviewDark();
-        previewDarkToggle.setText(dark ? "Dark" : "Light");
         if (previewDarkToggle.getGraphic() instanceof FontIcon icon) {
             icon.setIconLiteral(dark ? "fa-moon-o" : "fa-sun-o");
         }
