@@ -62,15 +62,22 @@
                 <Pane managed="false" visible="false" prefWidth="0"/>
             </left>
             <center>
+                <StackPane fx:id="workspaceStack" styleClass="workspace-stack">
+                    <padding>
+                        <Insets bottom="6.0" left="8.0" right="8.0" top="0.0"/>
+                    </padding>
+                    <children>
+                        <StackPane fx:id="workspaceFrame" styleClass="workspace-frame">
+                            <children>
                 <SplitPane fx:id="mainVerticalSplitPane" id="mainVerticalSplitPane" dividerPositions="1.0"
                            orientation="VERTICAL">
                     <items>
                         <SplitPane id="splitPane" fx:id="splitPane" dividerPositions="0.5, 0.5">
                             <items>
-                                <VBox minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                <VBox minWidth="0.0" styleClass="pane-workdir" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <children>
-                                        <FlowPane hgap="5" vgap="5">
+                                        <FlowPane hgap="5" vgap="5" styleClass="nested-toolbar,workdir-toolbar">
                                             <children>
                                                 <Button fx:id="changeWorkingDir" minWidth="-Infinity"
                                                         mnemonicParsing="false" onAction="#changeWorkingDir" text=""
@@ -245,7 +252,7 @@
                                         </StackPane>
                                     </children>
                                 </VBox>
-                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.22" minWidth="0">
+                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.22" minWidth="0" styleClass="pane-editor">
                                     <items>
                                         <TabPane fx:id="documentNavTabs" minWidth="0" tabClosingPolicy="UNAVAILABLE"
                                                  styleClass="document-nav-tabs">
@@ -266,7 +273,7 @@
                                     <items>
                                         <VBox minHeight="0" minWidth="0">
                                             <children>
-                                                <HBox alignment="CENTER_LEFT" spacing="6" styleClass="document-chrome">
+                                                <HBox alignment="CENTER_LEFT" spacing="6" styleClass="nested-toolbar,document-chrome">
                                                     <padding>
                                                         <Insets bottom="4.0" left="6.0" right="6.0" top="4.0"/>
                                                     </padding>
@@ -278,19 +285,6 @@
                                                                 <FontIcon iconLiteral="fa-list"/>
                                                             </graphic>
                                                         </ToggleButton>
-                                                        <Pane HBox.hgrow="ALWAYS"/>
-                                                        <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
-                                                                      onAction="#togglePreviewView" selected="true"
-                                                                      styleClass="chrome-button,mode-segment" text="Preview">
-                                                            <toggleGroup>
-                                                                <ToggleGroup fx:id="rightToggleGroup"/>
-                                                            </toggleGroup>
-                                                        </ToggleButton>
-                                                        <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
-                                                                      onAction="#toggleZenMode"
-                                                                      styleClass="chrome-button,mode-segment"
-                                                                      text="Preview Only"
-                                                                      toggleGroup="$rightToggleGroup"/>
                                                     </children>
                                                 </HBox>
                                                 <TabPane fx:id="tabPane" minHeight="0" minWidth="0"
@@ -305,11 +299,11 @@
                                 </SplitPane>
                                     </items>
                                 </SplitPane>
-                                <VBox fx:id="previewBox" minWidth="0" styleClass="preview-box" AnchorPane.bottomAnchor="0.0"
+                                <VBox fx:id="previewBox" minWidth="0" styleClass="preview-box,pane-preview" AnchorPane.bottomAnchor="0.0"
                                       AnchorPane.leftAnchor="0.0"
                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <children>
-                                        <HBox styleClass="menu-hbox, convert-box">
+                                        <HBox styleClass="menu-hbox, convert-box, nested-toolbar">
                                             <children>
                                                 <FlowPane hgap="10" prefWidth="-1.0" vgap="5">
                                                     <children>
@@ -358,7 +352,32 @@
                                                         <Insets/>
                                                     </HBox.margin>
                                                 </Pane>
-                                                <HBox alignment="CENTER_RIGHT" spacing="10">
+                                                <HBox alignment="CENTER_RIGHT" spacing="8">
+                                                <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
+                                                              onAction="#togglePreviewView" selected="true"
+                                                              styleClass="chrome-button,mode-segment" text="Preview">
+                                                    <toggleGroup>
+                                                        <ToggleGroup fx:id="rightToggleGroup"/>
+                                                    </toggleGroup>
+                                                </ToggleButton>
+                                                <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
+                                                              onAction="#toggleZenMode"
+                                                              styleClass="chrome-button,mode-segment"
+                                                              text="Preview Only"
+                                                              toggleGroup="$rightToggleGroup"/>
+                                                <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
+                                                              contentDisplay="GRAPHIC_ONLY"
+                                                              focusTraversable="false"
+                                                              minHeight="26.0" minWidth="28.0"
+                                                              mnemonicParsing="false" text=""
+                                                              styleClass="chrome-button,preview-theme-toggle">
+                                                    <graphic>
+                                                        <FontIcon iconLiteral="fa-moon-o"/>
+                                                    </graphic>
+                                                    <tooltip>
+                                                        <Tooltip text="Dark or light document preview. Browser stays light unless you choose Open dark."/>
+                                                    </tooltip>
+                                                </ToggleButton>
                                                 <Label fx:id="browserPro" alignment="CENTER" contentDisplay="RIGHT"
                                                        minWidth="-Infinity"
                                                        styleClass="output-button,browser,chrome-button" text="Open in Browser"
@@ -433,6 +452,10 @@
                         </ShowerHider>
                     </items>
                 </SplitPane>
+                            </children>
+                        </StackPane>
+                    </children>
+                </StackPane>
             </center>
             <top>
                 <HBox fx:id="topChromeBar" alignment="CENTER_LEFT" spacing="8" styleClass="top-chrome">
@@ -461,18 +484,17 @@
                                 <Tooltip text="Recent files"/>
                             </tooltip>
                         </ToggleButton>
-                        <Pane HBox.hgrow="ALWAYS"/>
                         <ToggleButton fx:id="toggleCopilotButton" mnemonicParsing="false" onAction="#toggleCopilotView"
                                       styleClass="chrome-button" text="Copilot">
                             <graphic>
                                 <FontIcon iconLiteral="fa-commenting"/>
                             </graphic>
                             <tooltip>
-                                <Tooltip text="Copilot"/>
+                                <Tooltip text="Copilot (workspace chat — drag the panel header to dock)"/>
                             </tooltip>
                         </ToggleButton>
                         <Pane HBox.hgrow="ALWAYS"/>
-                        <ToggleButton fx:id="previewDarkToggle" alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
+                        <ToggleButton fx:id="appThemeToggle" alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
                                       focusTraversable="false" minHeight="28.0" minWidth="32.0" mnemonicParsing="false"
                                       prefHeight="28.0" prefWidth="32.0" styleClass="chrome-button,preview-theme-toggle"
                                       text="">
@@ -480,8 +502,7 @@
                                 <FontIcon iconLiteral="fa-moon-o"/>
                             </graphic>
                             <tooltip>
-                                <Tooltip
-                                        text="Dark or light document preview in the app. Browser stays light unless you choose Open dark."/>
+                                <Tooltip text="Dark or light application theme"/>
                             </tooltip>
                         </ToggleButton>
                         <ToggleButton fx:id="toggleConfigButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"

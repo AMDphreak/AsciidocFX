@@ -159,6 +159,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public MenuButton exportMenu;
     public SplitPane documentSplitPane;
     public TabPane documentNavTabs;
+    public StackPane workspaceStack;
+    public StackPane workspaceFrame;
+    public ToggleButton appThemeToggle;
     public ShowerHider leftShowerHider;
     public ShowerHider rightShowerHider;
     public ShowerHider bottomShowerHider;
@@ -225,6 +228,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     private CopilotDock copilotDock = CopilotDock.RIGHT_OF_PREVIEW;
     private Stage copilotFloatStage;
+    private CopilotDropOverlay copilotDropOverlay;
+    private EventHandler<MouseEvent> copilotDragMove;
+    private EventHandler<MouseEvent> copilotDragRelease;
 
     private Path userHome = IOHelper.getPath(System.getProperty("user.home"));
 
@@ -1596,6 +1602,12 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             previewDarkToggle.setText("");
             previewDarkToggle.selectedProperty().bindBidirectional(editorConfigBean.previewDarkProperty());
             syncPreviewDarkToggle();
+        }
+        if (nonNull(appThemeToggle)) {
+            appThemeToggle.setFocusTraversable(false);
+            appThemeToggle.setText("");
+            syncAppThemeToggle();
+            appThemeToggle.setOnAction(event -> switchAppTheme(appThemeToggle.isSelected()));
         }
         editorConfigBean.previewDarkProperty().addListener((observable, wasDark, dark) -> {
             applyPreviewTheme();
@@ -3234,6 +3246,13 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     private void wireDocumentChrome() {
         applyOutlineVisibility(outlineToggle == null || outlineToggle.isSelected());
+        if (workspaceFrame != null && copilotDropOverlay == null) {
+            copilotDropOverlay = new CopilotDropOverlay();
+            StackPane.setAlignment(copilotDropOverlay, Pos.CENTER);
+            copilotDropOverlay.prefWidthProperty().bind(workspaceFrame.widthProperty());
+            copilotDropOverlay.prefHeightProperty().bind(workspaceFrame.heightProperty());
+            workspaceFrame.getChildren().add(copilotDropOverlay);
+        }
     }
 
     private void applyTabChrome(MyTab tab) {
@@ -3245,7 +3264,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             if (toggleZenButton != null) {
                 toggleZenButton.setSelected(true);
             }
-            splitPane.setDividerPositions(0, 0);
+            restoreMainDividers();
         } else {
             if (previewSplitToggle != null) {
                 previewSplitToggle.setSelected(true);
@@ -3277,7 +3296,24 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             toggleCopilotButton.setSelected(true);
         }
         switch (dock) {
+            case LEFT_OF_DOCUMENT -> {
+                copilotPanel.setMinWidth(240);
+                copilotPanel.setMinHeight(0);
+                int idx = Math.min(1, splitPane.getItems().size());
+                if (!splitPane.getItems().contains(copilotPanel)) {
+                    splitPane.getItems().add(idx, copilotPanel);
+                }
+                restoreMainDividers();
+            }
+            case TOP_OF_WORKSPACE -> {
+                copilotPanel.setMinHeight(160);
+                if (!mainVerticalSplitPane.getItems().contains(copilotPanel)) {
+                    mainVerticalSplitPane.getItems().add(0, copilotPanel);
+                }
+                mainVerticalSplitPane.setDividerPositions(0.28, 0.86);
+            }
             case BOTTOM_OF_WINDOW -> {
+                copilotPanel.setMinHeight(160);
                 if (!mainVerticalSplitPane.getItems().contains(copilotPanel)) {
                     mainVerticalSplitPane.getItems().add(1, copilotPanel);
                 }
@@ -3302,13 +3338,58 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 copilotFloatStage.show();
                 copilotFloatStage.toFront();
             }
-            default -> {
+            case RIGHT_OF_PREVIEW -> {
+                copilotPanel.setMinWidth(240);
+                copilotPanel.setMinHeight(0);
                 if (!splitPane.getItems().contains(copilotPanel)) {
                     splitPane.getItems().add(copilotPanel);
                 }
                 restoreMainDividers();
             }
         }
+    }
+
+    public void beginCopilotDockDrag() {
+        if (copilotDropOverlay == null || scene == null) {
+            return;
+        }
+        copilotDropOverlay.showZones();
+        if (copilotDragMove == null) {
+            copilotDragMove = event -> copilotDropOverlay.hoverAtScreen(event.getScreenX(), event.getScreenY());
+            copilotDragRelease = event -> {
+                CopilotDock dock = copilotDropOverlay.finish();
+                removeCopilotDragFilters();
+                dockCopilot(dock);
+            };
+        }
+        addCopilotDragFilters(scene);
+        if (copilotFloatStage != null && copilotFloatStage.getScene() != null) {
+            addCopilotDragFilters(copilotFloatStage.getScene());
+        }
+    }
+
+    private void addCopilotDragFilters(Scene target) {
+        if (target == null || copilotDragMove == null) {
+            return;
+        }
+        target.addEventFilter(MouseEvent.MOUSE_DRAGGED, copilotDragMove);
+        target.addEventFilter(MouseEvent.MOUSE_RELEASED, copilotDragRelease);
+    }
+
+    private void removeCopilotDragFilters() {
+        if (copilotDragMove == null) {
+            return;
+        }
+        if (scene != null) {
+            scene.removeEventFilter(MouseEvent.MOUSE_DRAGGED, copilotDragMove);
+            scene.removeEventFilter(MouseEvent.MOUSE_RELEASED, copilotDragRelease);
+        }
+        if (copilotFloatStage != null && copilotFloatStage.getScene() != null) {
+            copilotFloatStage.getScene().removeEventFilter(MouseEvent.MOUSE_DRAGGED, copilotDragMove);
+            copilotFloatStage.getScene().removeEventFilter(MouseEvent.MOUSE_RELEASED, copilotDragRelease);
+        }
+        copilotDragMove = null;
+        copilotDragRelease = null;
     }
 
     public void undockCopilot() {
@@ -3333,16 +3414,68 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     private void restoreMainDividers() {
-        boolean copilotRight = copilotDock == CopilotDock.RIGHT_OF_PREVIEW
-                && splitPane.getItems().contains(copilotPanel);
-        if (current.currentTab() != null && current.currentTab().isPreviewOnly()) {
-            splitPane.setDividerPositions(0, 0);
+        ObservableList<Node> items = splitPane.getItems();
+        int n = items.size();
+        if (n < 2) {
             return;
         }
-        if (copilotRight) {
+        boolean previewOnly = current.currentTab() != null && current.currentTab().isPreviewOnly();
+        int previewIdx = items.indexOf(previewBox);
+        if (previewIdx < 0) {
+            previewIdx = Math.min(2, n - 1);
+        }
+        if (previewOnly) {
+            double[] collapsed = new double[n - 1];
+            for (int i = 0; i < collapsed.length; i++) {
+                collapsed[i] = i < previewIdx ? 0 : 0.72;
+            }
+            splitPane.setDividerPositions(collapsed);
+            return;
+        }
+        int copilotIdx = items.indexOf(copilotPanel);
+        if (copilotIdx == 1 && n >= 4) {
+            splitPane.setDividerPositions(0.15, 0.36, 0.72);
+            return;
+        }
+        if (copilotIdx == n - 1 && n >= 4) {
             splitPane.setDividerPositions(0.15, 0.48, 0.74);
-        } else {
-            splitPane.setDividerPositions(0.17, 0.59);
+            return;
+        }
+        splitPane.setDividerPositions(0.17, 0.59);
+    }
+
+    private void switchAppTheme(boolean dark) {
+        ObservableList<EditorConfigBean.Theme> themes = editorConfigBean.getEditorTheme();
+        if (themes == null || themes.isEmpty()) {
+            return;
+        }
+        Optional<EditorConfigBean.Theme> match = themes.stream()
+                .filter(t -> dark == "Dark".equalsIgnoreCase(t.getThemeName()))
+                .findFirst();
+        if (match.isEmpty()) {
+            return;
+        }
+        EditorConfigBean.Theme chosen = match.get();
+        if (!themes.get(0).equals(chosen)) {
+            themes.remove(chosen);
+            themes.add(0, chosen);
+        }
+        applyTheme(chosen, getAllStages());
+        editorConfigBean.save();
+        syncAppThemeToggle();
+    }
+
+    private void syncAppThemeToggle() {
+        if (isNull(appThemeToggle)) {
+            return;
+        }
+        boolean dark = editorConfigBean.getEditorTheme().stream()
+                .findFirst()
+                .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
+                .orElse(true);
+        appThemeToggle.setSelected(dark);
+        if (appThemeToggle.getGraphic() instanceof FontIcon icon) {
+            icon.setIconLiteral(dark ? "fa-moon-o" : "fa-sun-o");
         }
     }
 
@@ -3477,6 +3610,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 terminalConfigBean.changeTheme(theme);
                 applyForEachTerminal(terminalTab ->
                         terminalTab.getTerminal().updatePrefs(terminalConfigBean.createTerminalConfig()));
+                syncAppThemeToggle();
 
             } catch (Exception e) {
                 logger.error("Error occured while setting new theme {}", theme);

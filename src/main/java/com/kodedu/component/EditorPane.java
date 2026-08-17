@@ -164,7 +164,7 @@ public class EditorPane extends AnchorPane {
                 .findFirst()
                 .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
                 .orElse(true);
-        String fill = dark ? "#1e1e1e" : "#ffffff";
+        String fill = dark ? "#252628" : "#f3f3f3";
         webView.setPageFill(Color.web(fill));
         webView.setStyle("-fx-background-color: " + fill + ";");
         setStyle("-fx-background-color: " + fill + ";");

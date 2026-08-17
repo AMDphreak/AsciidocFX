@@ -2,6 +2,24 @@
 
 .root {
     -fx-base: #ececec;
+    -fx-background: #e4e5e7;
+}
+
+.workspace-frame {
+    -fx-background-color: #ececef;
+    -fx-border-color: #c8c9cc;
+}
+
+.pane-editor {
+    -fx-background-color: #f3f3f3;
+}
+
+.pane-preview {
+    -fx-background-color: #f6f6f5;
+}
+
+.pane-workdir {
+    -fx-background-color: #efefef;
 }
 
 .button, .menu-button, .toggle-button, .choice-box {

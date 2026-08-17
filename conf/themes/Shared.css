@@ -323,6 +323,35 @@
 
 .top-chrome {
     -fx-alignment: CENTER_LEFT;
+    -fx-background-color: transparent;
+}
+
+.workspace-stack {
+    -fx-background-color: transparent;
+}
+
+.workspace-frame {
+    -fx-background-color: derive(-fx-background, 4%);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: derive(-fx-text-base-color, 55%);
+    -fx-border-width: 1;
+    -fx-padding: 4;
+}
+
+.pane-editor {
+    -fx-background-color: derive(-fx-background, 10%);
+    -fx-background-radius: 8;
+}
+
+.pane-preview {
+    -fx-background-color: derive(-fx-background, 18%);
+    -fx-background-radius: 8;
+}
+
+.pane-workdir {
+    -fx-background-color: derive(-fx-background, 8%);
+    -fx-background-radius: 8;
 }
 
 .chrome-button {
@@ -335,14 +364,72 @@
     -fx-background-color: transparent;
 }
 
+.top-chrome .chrome-button.toggle-button,
+.top-chrome .chrome-button.button,
+.top-chrome .chrome-button.menu-button {
+    -fx-background-color: derive(-fx-base, 8%);
+    -fx-border-color: derive(-fx-text-base-color, 25%);
+    -fx-border-width: 1;
+}
+
+.nested-toolbar .chrome-button.toggle-button,
+.nested-toolbar .chrome-button.button,
+.nested-toolbar .chrome-button.menu-button,
+.nested-toolbar .chrome-button {
+    -fx-background-color: transparent;
+    -fx-border-color: derive(-fx-text-base-color, 70%);
+    -fx-text-fill: derive(-fx-text-base-color, 15%);
+}
+
+.nested-toolbar .chrome-button .ikonli-font-icon {
+    -fx-icon-color: derive(-fx-text-base-color, 20%);
+}
+
+.convert-box .preview-theme-toggle {
+    -fx-opacity: 0.78;
+    -fx-border-color: derive(-fx-text-base-color, 75%);
+}
+
 .chrome-button:hover,
 .chrome-button:selected,
 .chrome-button:armed {
     -fx-background-color: derive(-fx-base, 18%);
 }
 
-.chrome-button:selected {
+.top-chrome .chrome-button:hover,
+.top-chrome .chrome-button:selected {
+    -fx-background-color: derive(-fx-base, 16%);
     -fx-border-color: derive(-fx-text-base-color, 10%);
+}
+
+.nested-toolbar .chrome-button:hover,
+.nested-toolbar .chrome-button:selected {
+    -fx-background-color: derive(-fx-base, 10%);
+    -fx-border-color: derive(-fx-text-base-color, 55%);
+}
+
+.copilot-drop-overlay {
+    -fx-background-color: transparent;
+}
+
+.copilot-drop-zone {
+    -fx-background-color: rgba(70, 130, 210, 0.16);
+    -fx-border-color: rgba(120, 170, 255, 0.4);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-border-style: dashed;
+}
+
+.copilot-drop-zone.active {
+    -fx-background-color: rgba(70, 130, 210, 0.4);
+    -fx-border-color: rgba(160, 200, 255, 0.85);
+    -fx-border-style: solid;
+}
+
+.copilot-drop-zone .label {
+    -fx-text-fill: -fx-text-base-color;
+    -fx-font-weight: bold;
 }
 
 .mode-segment {

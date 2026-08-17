@@ -6,6 +6,8 @@ package com.kodedu.component;
  */
 public enum CopilotDock {
     RIGHT_OF_PREVIEW,
+    LEFT_OF_DOCUMENT,
+    TOP_OF_WORKSPACE,
     BOTTOM_OF_WINDOW,
     FLOAT
 }

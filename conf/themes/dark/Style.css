@@ -7,6 +7,23 @@
     -fx-control-inner-background: #121314;
 }
 
+.workspace-frame {
+    -fx-background-color: #1d1e20;
+    -fx-border-color: #3a3b3d;
+}
+
+.pane-editor {
+    -fx-background-color: #252628;
+}
+
+.pane-preview {
+    -fx-background-color: #2a2c2e;
+}
+
+.pane-workdir {
+    -fx-background-color: #222324;
+}
+
 /* Buttons */
 
 .button,

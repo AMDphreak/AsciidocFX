@@ -111,9 +111,19 @@ public class CopilotPanel extends VBox {
         dockButton.getStyleClass().add("copilot-auth-button");
         dockButton.getItems().addAll(
                 dockItem("Right of preview", CopilotDock.RIGHT_OF_PREVIEW),
+                dockItem("Left of editor", CopilotDock.LEFT_OF_DOCUMENT),
+                dockItem("Top of workspace", CopilotDock.TOP_OF_WORKSPACE),
                 dockItem("Bottom of window", CopilotDock.BOTTOM_OF_WINDOW),
                 dockItem("Pop-out window", CopilotDock.FLOAT)
         );
+
+        FontIcon grip = new FontIcon(FontAwesome.ARROWS);
+        grip.getStyleClass().add("copilot-drag-grip");
+        Label gripLabel = new Label();
+        gripLabel.setGraphic(grip);
+        gripLabel.setTooltip(new Tooltip("Drag to dock Copilot"));
+        header.getChildren().add(0, gripLabel);
+        installDockDrag(header);
 
         Pane spacer = new Pane();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -249,6 +259,31 @@ public class CopilotPanel extends VBox {
         MenuItem item = new MenuItem(label);
         item.setOnAction(e -> controller.dockCopilot(dock));
         return item;
+    }
+
+    private void installDockDrag(HBox header) {
+        final double[] start = {0, 0};
+        final boolean[] dragging = {false};
+        header.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, event -> {
+            if (event.getTarget() instanceof Button || event.getTarget() instanceof MenuButton) {
+                dragging[0] = false;
+                return;
+            }
+            start[0] = event.getScreenX();
+            start[1] = event.getScreenY();
+            dragging[0] = false;
+        });
+        header.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED, event -> {
+            if (event.getTarget() instanceof Button || event.getTarget() instanceof MenuButton) {
+                return;
+            }
+            double dx = event.getScreenX() - start[0];
+            double dy = event.getScreenY() - start[1];
+            if (!dragging[0] && (dx * dx + dy * dy) > 64) {
+                dragging[0] = true;
+                controller.beginCopilotDockDrag();
+            }
+        });
     }
 
     private void handleSend() {

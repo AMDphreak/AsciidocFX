@@ -93,7 +93,7 @@ public class HtmlPane extends ViewPanel {
     @Override
     public void applySurfaceColors() {
         boolean dark = editorConfigBean.isPreviewDark();
-        String fill = dark ? "#121314" : "#ffffff";
+        String fill = dark ? "#2a2c2e" : "#f6f6f5";
         getWebView().setPageFill(Color.web(fill));
         getWebView().setStyle("-fx-background-color: " + fill + ";");
         setStyle("-fx-background-color: " + fill + ";");
