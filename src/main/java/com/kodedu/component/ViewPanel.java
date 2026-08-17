@@ -27,6 +27,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Modality;
@@ -89,7 +90,20 @@ public abstract class ViewPanel extends AnchorPane {
             initializeMargins();
             initializePreviewContextMenus();
             initializePopupView();
+            applySurfaceColors();
         });
+    }
+
+    public void applySurfaceColors() {
+        boolean dark = editorConfigBean.getEditorTheme().stream()
+                .findFirst()
+                .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
+                .orElse(true);
+        String fill = dark ? "#191A1B" : "#F3F3F3";
+        WebView wv = getWebView();
+        wv.setPageFill(Color.web(fill));
+        wv.setStyle("-fx-background-color: " + fill + ";");
+        setStyle("-fx-background-color: " + fill + ";");
     }
 
     private void initializeSearchBox(VBox box) {

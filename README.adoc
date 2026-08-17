@@ -490,6 +490,8 @@ mvn -DskipTests -Plocal-run spring-boot:run
 The `local-run` profile is **declarative**: it pulls OS-native OpenJFX jars from Maven Central into `target/javafx-mods` and wires `--module-path` for you. No Gluon zip and no permanent JavaFX entries on your user `PATH`.
 +
 Helpers: `scripts/afx-run.ps1` (Windows) / `scripts/afx-run.sh` (Unix).
++
+Fork status (custom title bar **unsolved**, native chrome kept so the window can move): see `FORK.md`.
 4. Packaged scripts (optional): `mvn -DskipTests package -Pinstall4j-package` then look under `target/appassembler/bin` for `asciidocfx` / `asciidocfx.bat`.
 
 NOTE: We are generating builds with *Github Actions* automatically.

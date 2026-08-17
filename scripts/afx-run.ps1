@@ -24,5 +24,5 @@ if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
 }
 
 Write-Host "Using: $mvn"
-Write-Host "JavaFX jars are copied by -Plocal-run from Maven Central (target/javafx-mods)."
-& $mvn -DskipTests -Plocal-run spring-boot:run @args
+Write-Host "Compiling then running (kills stale target/classes)."
+& $mvn -DskipTests -Plocal-run compile spring-boot:run @args

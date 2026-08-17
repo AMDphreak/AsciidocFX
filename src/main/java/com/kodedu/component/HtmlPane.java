@@ -6,6 +6,8 @@ import com.kodedu.helper.ClipboardHelper;
 import com.kodedu.other.Current;
 import com.kodedu.service.DirectoryService;
 import com.kodedu.service.ThreadService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class HtmlPane extends ViewPanel {
+
+    private static final Logger logger = LoggerFactory.getLogger(HtmlPane.class);
 
     private final PreviewConfigBean previewConfigBean;
     private final DocbookConfigBean docbookConfigBean;
@@ -65,9 +69,34 @@ public class HtmlPane extends ViewPanel {
 
     public void refreshUI(String content) {
         threadService.runActionLater(() -> {
+            if (!isPreviewScriptReady()) {
+                return;
+            }
             this.setMember("lastRenderedValue", content);
             webEngine().executeScript("refreshUI(lastRenderedValue)");
         });
+    }
+
+    public void applyPreviewStylesheet() {
+        applySurfaceColors();
+        threadService.runActionLater(() -> {
+            if (!isPreviewScriptReady()) {
+                return;
+            }
+            webEngine().executeScript(
+                    "document.querySelectorAll('link[href*=\"asciidoctor-preview-theme\"]').forEach(function(l){"
+                            + "l.href='/afx/dynamic/css/?p=asciidoctor-preview-theme.css&t='+Date.now();});");
+        });
+    }
+
+    private boolean isPreviewScriptReady() {
+        try {
+            Object ready = webEngine().executeScript("typeof refreshUI === 'function'");
+            return Boolean.TRUE.equals(ready) || "true".equals(String.valueOf(ready));
+        } catch (Exception e) {
+            logger.debug("Preview scripts not ready: {}", e.getMessage());
+            return false;
+        }
     }
 
     public void updateBase64Url(int index, String imageBase64) {

@@ -5,11 +5,6 @@
     -fx-base: #323334;
     -fx-background: #191A1B;
     -fx-control-inner-background: #121314;
-    -fx-window-title-bg: #191A1B;
-    -fx-window-title-border: #2A2B2C;
-    -fx-window-title-fg: #CCCCCC;
-    -fx-window-title-fg-inactive: #8C8C8C;
-    -fx-window-btn-hover: rgba(255, 255, 255, 0.08);
 }
 
 /* Buttons */

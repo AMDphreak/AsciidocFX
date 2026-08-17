@@ -2,11 +2,6 @@
 
 .root {
     -fx-base: #ececec;
-    -fx-window-title-bg: #f3f3f3;
-    -fx-window-title-border: #d4d4d4;
-    -fx-window-title-fg: #333333;
-    -fx-window-title-fg-inactive: #6d6d6d;
-    -fx-window-btn-hover: rgba(0, 0, 0, 0.06);
 }
 
 .button, .menu-button, .toggle-button, .choice-box {

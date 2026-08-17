@@ -76,6 +76,7 @@ public class EditorConfigBean extends ConfigurationBase {
     private DoubleProperty screenY = new SimpleDoubleProperty(0);
     private DoubleProperty screenWidth = new SimpleDoubleProperty();
     private DoubleProperty screenHeight = new SimpleDoubleProperty();
+    private BooleanProperty maximized = new SimpleBooleanProperty(false);
 
     private DoubleProperty previewScreenX = new SimpleDoubleProperty(0);
     private DoubleProperty previewScreenY = new SimpleDoubleProperty(0);
@@ -417,6 +418,18 @@ public class EditorConfigBean extends ConfigurationBase {
         this.screenHeight.set(screenHeight);
     }
 
+    public boolean isMaximized() {
+        return maximized.get();
+    }
+
+    public BooleanProperty maximizedProperty() {
+        return maximized;
+    }
+
+    public void setMaximized(boolean maximized) {
+        this.maximized.set(maximized);
+    }
+
     public FoldStyle getFoldStyle() {
         return foldStyle.get();
     }
@@ -584,7 +597,7 @@ public class EditorConfigBean extends ConfigurationBase {
         String aceFontFamily = jsonObject.getString("aceFontFamily-1", aceDefaultFont);
         int aceFontSize = jsonObject.getInt("aceFontSize-1", 16);
         int editorFontSize = jsonObject.getInt("editorFontSize", 14);
-        String aceTheme = jsonObject.getString("aceTheme", "xcode");
+        String aceTheme = jsonObject.getString("aceTheme", "tomorrow_night");
         String defaultLanguage = jsonObject.getString("defaultLanguage", "en");
         boolean useWrapMode = jsonObject.getBoolean("useWrapMode", true);
         boolean showGutter = jsonObject.getBoolean("showGutter", false);
@@ -745,6 +758,8 @@ public class EditorConfigBean extends ConfigurationBase {
             double screenHeight = jsonObject.getJsonNumber("screenHeight").doubleValue();
             this.setScreenHeight(screenHeight);
         }
+
+        this.setMaximized(jsonObject.getBoolean("maximized", false));
     }
 
     private void setDetachedStagePositions(JsonObject jsonObject) {
@@ -811,6 +826,7 @@ public class EditorConfigBean extends ConfigurationBase {
                 .add("screenY", getScreenY())
                 .add("screenWidth", getScreenWidth())
                 .add("screenHeight", getScreenHeight())
+                .add("maximized", isMaximized())
                 .add("previewScreenX", getPreviewScreenX())
                 .add("previewScreenY", getPreviewScreenY())
                 .add("previewScreenWidth", getPreviewScreenWidth())

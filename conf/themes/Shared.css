@@ -38,7 +38,13 @@
 }
 
 .tab-header-background, .tab-header-area {
-    -fx-background-color: null;
+    -fx-background-color: -fx-background;
+}
+
+.root-container,
+.tab-pane > .tab-content-area,
+.web-view {
+    -fx-background-color: -fx-background;
 }
 
 .tab-pane.floating > .tab-content-area {
@@ -343,46 +349,4 @@
 
 .color-picker {
     -fx-min-height: 25px;
-}
-
-/* Custom window chrome (undecorated title bar) */
-.window-chrome-root {
-    -fx-background-color: -fx-background;
-}
-
-.window-title-bar {
-    -fx-background-color: -fx-window-title-bg;
-    -fx-border-color: -fx-window-title-border;
-    -fx-border-width: 0 0 1 0;
-    -fx-alignment: center-left;
-}
-
-.window-title-label {
-    -fx-text-fill: -fx-window-title-fg;
-    -fx-font-size: 12px;
-}
-
-.window-btn {
-    -fx-background-color: transparent;
-    -fx-background-radius: 0;
-    -fx-border-width: 0;
-    -fx-text-fill: -fx-window-title-fg;
-    -fx-font-size: 12px;
-    -fx-padding: 0;
-    -fx-cursor: hand;
-}
-
-.window-btn:hover {
-    -fx-background-color: -fx-window-btn-hover;
-}
-
-.window-btn-close:hover {
-    -fx-background-color: #e81123;
-    -fx-text-fill: white;
-}
-
-.window-inactive .window-title-label,
-.window-inactive .window-btn {
-    -fx-text-fill: -fx-window-title-fg-inactive;
-    -fx-opacity: 0.85;
 }

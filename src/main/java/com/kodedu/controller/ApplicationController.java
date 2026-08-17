@@ -921,7 +921,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         tabService.initializeTabChangeListener(tabPane);
         threadService.runActionLater(() -> {
             detachStage = new Stage();
-            WindowChrome.prepareStage(detachStage);
             detachStage.setTitle("AsciidocFX Preview");
             detachStage.initModality(Modality.WINDOW_MODAL);
             detachStage.setAlwaysOnTop(true);
@@ -1019,8 +1018,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 AnchorPane anchorPane = new AnchorPane();
                 FxHelper.fitToParent(anchorPane);
                 anchorPane.getChildren().add(previewBox);
-                Parent chromeRoot = WindowChrome.decorate(detachStage, anchorPane);
-                Scene scene = new Scene(chromeRoot);
+                Scene scene = new Scene(anchorPane);
                 detachStage.setScene(scene);
                 applyCurrentTheme(detachStage);
                 applyCurrentFontFamily(detachStage);
@@ -1049,31 +1047,12 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     private void applyDetachedStagePosition(Stage stage) {
-        double screenX = editorConfigBean.getPreviewScreenX();
-        double screenY = editorConfigBean.getPreviewScreenY();
-        double screenHeight = editorConfigBean.getPreviewScreenHeight();
-        double screenWidth = editorConfigBean.getPreviewScreenWidth();
-
-        if (nonNull(screenX)) {
-            stage.setX(screenX);
-        }
-
-        if (nonNull(screenY)) {
-            stage.setY(screenY);
-        }
-
-        if (nonNull(screenWidth)) {
-            if (screenWidth != 0) {
-                stage.setWidth(screenWidth);
-            }
-        }
-
-        if (nonNull(screenHeight)) {
-            if (screenHeight != 0) {
-                stage.setHeight(screenHeight);
-            }
-        }
-
+        WindowPlacement.apply(stage,
+                editorConfigBean.getPreviewScreenX(),
+                editorConfigBean.getPreviewScreenY(),
+                editorConfigBean.getPreviewScreenWidth(),
+                editorConfigBean.getPreviewScreenHeight(),
+                false);
     }
 
 
@@ -1403,31 +1382,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             editorConfigBean.updateAceFontFamily(fontFamily);
         });
 
-        Double screenX = editorConfigBean.getScreenX();
-        Double screenY = editorConfigBean.getScreenY();
-        Double screenWidth = editorConfigBean.getScreenWidth();
-        Double screenHeight = editorConfigBean.getScreenHeight();
-
-        if (nonNull(screenX)) {
-            stage.setX(screenX);
-        }
-
-        if (nonNull(screenY)) {
-            stage.setY(screenY);
-        }
-
-        if (nonNull(screenWidth)) {
-            if (screenWidth != 0) {
-                stage.setWidth(screenWidth);
-            }
-        }
-
-        if (nonNull(screenHeight)) {
-            if (screenHeight != 0) {
-                stage.setHeight(screenHeight);
-            }
-        }
-
         ObservableList<SplitPane.Divider> dividers = splitPane.getDividers();
         dividers.get(0).setPosition(editorConfigBean.getFirstSplitter());
         if (dividers.size() > 1) {
@@ -1623,19 +1577,31 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         });
 
         stage.xProperty().addListener((observable, oldValue, newValue) -> {
-            editorConfigBean.setScreenX(newValue.doubleValue());
+            if (!stage.isMaximized() && !stage.isIconified()) {
+                editorConfigBean.setScreenX(newValue.doubleValue());
+            }
         });
 
         stage.yProperty().addListener((observable, oldValue, newValue) -> {
-            editorConfigBean.setScreenY(newValue.doubleValue());
+            if (!stage.isMaximized() && !stage.isIconified()) {
+                editorConfigBean.setScreenY(newValue.doubleValue());
+            }
         });
 
         stage.widthProperty().addListener((observable, oldValue, newValue) -> {
-            editorConfigBean.setScreenWidth(newValue.doubleValue());
+            if (!stage.isMaximized() && !stage.isIconified()) {
+                editorConfigBean.setScreenWidth(newValue.doubleValue());
+            }
         });
 
         stage.heightProperty().addListener((observable, oldValue, newValue) -> {
-            editorConfigBean.setScreenHeight(newValue.doubleValue());
+            if (!stage.isMaximized() && !stage.isIconified()) {
+                editorConfigBean.setScreenHeight(newValue.doubleValue());
+            }
+        });
+
+        stage.maximizedProperty().addListener((observable, wasMaximized, maximized) -> {
+            editorConfigBean.setMaximized(maximized);
         });
 
 
@@ -1773,6 +1739,11 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         threadService.schedule(() -> {
             try {
                 if (!editorConfigBean.getAutoUpdate()) {
+                    return;
+                }
+                // install4j updater (application 504) only exists inside a packaged build.
+                if (System.getProperty("install4j.appDir") == null
+                        && System.getProperty("exe4j.moduleName") == null) {
                     return;
                 }
 
@@ -3280,9 +3251,11 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
                 Integer editorFontSize = editorConfigBean.getEditorFontSize();
 
+                boolean dark = "Dark".equalsIgnoreCase(theme.getThemeName());
                 for (Stage stage : stages) {
                     if (nonNull(stage) && nonNull(stage.getScene())) {
                         Scene stageScene = stage.getScene();
+                        stageScene.setFill(WindowPlacement.defaultSceneFill(dark));
                         ObservableList<String> stylesheets = stageScene.getStylesheets();
                         stylesheets.clear();
                         stylesheets.add(themeUri);
@@ -3298,6 +3271,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
                 String aceTheme = theme.getAceTheme();
                 editorConfigBean.updateAceTheme(aceTheme);
+                applyForAllEditorPanes(EditorPane::applyEditorSurfaceColors);
+                if (nonNull(htmlPane)) {
+                    htmlPane.applySurfaceColors();
+                }
 
                 terminalConfigBean.changeTheme(theme);
                 applyForEachTerminal(terminalTab ->
@@ -3323,7 +3300,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         previewThemeStylesheet = getConfigPath().resolve(
                 dark ? "public/css/asciidoctor-dark.css" : "public/css/asciidoctor-preview-theme-light.css");
         if (nonNull(htmlPane)) {
-            htmlPane.loadInitialUrl();
+            htmlPane.applyPreviewStylesheet();
         }
     }
 
@@ -3348,20 +3325,15 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     public void checkStageInsideScreens() {
-
-        if (stageNoteInScreens(stage)) {
-            logger.info("Main stage is not in visible part of any screen. It will be moved to x=0,y=0");
-            stage.setX(0);
-            stage.setY(0);
-            editorConfigBean.setScreenX(0);
-            editorConfigBean.setScreenY(0);
+        if (WindowPlacement.ensureOnScreen(stage)) {
+            logger.info("Main stage was off-screen; moved onto a visible display");
+            if (!stage.isMaximized()) {
+                editorConfigBean.setScreenX(stage.getX());
+                editorConfigBean.setScreenY(stage.getY());
+                editorConfigBean.setScreenWidth(stage.getWidth());
+                editorConfigBean.setScreenHeight(stage.getHeight());
+            }
         }
-    }
-
-    private boolean stageNoteInScreens(Stage stage) {
-        return Screen.getScreens().stream()
-                .map(Screen::getBounds)
-                .noneMatch(bounds -> bounds.contains(stage.getX(), stage.getY()));
     }
 
     public void openPaypal(ActionEvent actionEvent) {

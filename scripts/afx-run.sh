@@ -13,4 +13,4 @@ else
   exit 1
 fi
 echo "JavaFX jars are copied by -Plocal-run from Maven Central (target/javafx-mods)."
-exec "${mvn_cmd[@]}" -DskipTests -Plocal-run spring-boot:run "$@"
+exec "${mvn_cmd[@]}" -DskipTests -Plocal-run compile spring-boot:run "$@"
