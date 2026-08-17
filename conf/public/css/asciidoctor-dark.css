@@ -1,6 +1,6 @@
 /*
- * Preview-only dark stylesheet. Applied when the UI theme is Dark.
- * Does not affect HTML export unless the user configures a custom stylesheet.
+ * Preview-only dark stylesheet. Used by the in-app preview switcher and by
+ * Browser → Open dark. Does not change HTML export.
  *
  * Color layering inspired by modern editor dark themes (concepts only).
  */

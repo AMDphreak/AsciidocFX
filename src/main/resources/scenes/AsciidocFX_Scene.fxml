@@ -431,6 +431,16 @@
                                                         <FontIcon iconLiteral="fa-flash"/>
                                                     </graphic>
                                                 </Label>
+                                                <ToggleButton fx:id="previewDarkToggle" alignment="TOP_RIGHT"
+                                                              minWidth="-Infinity" mnemonicParsing="false"
+                                                              styleClass="output-button,preview-theme" text="Dark">
+                                                    <graphic>
+                                                        <FontIcon iconLiteral="fa-moon-o"/>
+                                                    </graphic>
+                                                    <tooltip>
+                                                        <Tooltip text="Dark or light document preview in the app. Browser stays light unless you choose Open dark."/>
+                                                    </tooltip>
+                                                </ToggleButton>
                                             </children>
                                             <padding>
                                                 <Insets bottom="5.0" left="15.0" right="15.0" top="5.0"/>

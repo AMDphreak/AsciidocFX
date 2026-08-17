@@ -208,6 +208,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public Label ebookPro;
     public Label docbookPro;
     public Label browserPro;
+    public ToggleButton previewDarkToggle;
     public VBox previewBox;
     public SeparatorMenuItem renameSeparator;
     public SeparatorMenuItem addToFavSeparator;
@@ -228,8 +229,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     @Autowired
     public HtmlPane htmlPane;
-
-    private volatile Path previewThemeStylesheet;
 
     @Autowired
     public AsciidocAsciidoctorjConverter asciidoctorjConverter;
@@ -770,6 +769,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         ContextMenu browserContextMenu = new ContextMenu();
         browserContextMenu.getStyleClass().add("build-menu");
+        browserContextMenu.getItems().add(MenuItemBuilt.item("Open light").click(event -> externalBrowse()));
+        browserContextMenu.getItems().add(MenuItemBuilt.item("Open dark").click(event -> externalBrowseDark()));
+        browserContextMenu.getItems().add(new SeparatorMenuItem());
         List<MenuItem> browserMenuItem = Stream.of(BrowserType.values()).map(b -> MenuItemBuilt.item(b.name()).click(event -> {
             externalBrowse(b);
         })).collect(Collectors.toList());
@@ -1392,6 +1394,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             applyTheme(theme, getAllStages());
             applyForAllEditorPanes(editorPane -> editorPane.setTheme(theme.getAceTheme()));
         });
+        applyPreviewTheme();
 
         applyForAllEditorPanes(editorPane -> editorPane.setShowGutter(editorConfigBean.getShowGutter()));
         applyForAllEditorPanes(editorPane -> editorPane.setUseWrapMode(editorConfigBean.getUseWrapMode()));
@@ -1569,6 +1572,16 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         });
 
         editorConfigBean.showHiddenFilesProperty().bindBidirectional(showHiddenFiles.selectedProperty());
+
+        if (nonNull(previewDarkToggle)) {
+            previewDarkToggle.setFocusTraversable(false);
+            previewDarkToggle.selectedProperty().bindBidirectional(editorConfigBean.previewDarkProperty());
+            syncPreviewDarkToggle();
+        }
+        editorConfigBean.previewDarkProperty().addListener((observable, wasDark, dark) -> {
+            applyPreviewTheme();
+            syncPreviewDarkToggle();
+        });
 
         storedConfigBean.workingDirectoryProperty().addListener((observable, oldValue, newValue) -> {
             if (nonNull(newValue) && isNull(oldValue)) {
@@ -2063,6 +2076,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     public void externalBrowse() {
         rightShowerHider.getShowing().ifPresent(ViewPanel::browse);
+    }
+
+    public void externalBrowseDark() {
+        rightShowerHider.getShowing().ifPresent(ViewPanel::browseDark);
     }
 
     public void externalBrowse(BrowserType browserType) {
@@ -3280,8 +3297,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 applyForEachTerminal(terminalTab ->
                         terminalTab.getTerminal().updatePrefs(terminalConfigBean.createTerminalConfig()));
 
-                applyPreviewTheme(theme);
-
             } catch (Exception e) {
                 logger.error("Error occured while setting new theme {}", theme);
             }
@@ -3289,18 +3304,41 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     public Path getPreviewThemeStylesheet() {
-        if (nonNull(previewThemeStylesheet) && Files.exists(previewThemeStylesheet)) {
-            return previewThemeStylesheet;
+        return getPreviewThemeStylesheet(null);
+    }
+
+    public Path getPreviewThemeStylesheet(String mode) {
+        boolean dark;
+        if ("dark".equalsIgnoreCase(mode)) {
+            dark = true;
+        } else if ("light".equalsIgnoreCase(mode)) {
+            dark = false;
+        } else {
+            dark = editorConfigBean.isPreviewDark();
+        }
+        Path stylesheet = getConfigPath().resolve(
+                dark ? "public/css/asciidoctor-dark.css" : "public/css/asciidoctor-preview-theme-light.css");
+        if (Files.exists(stylesheet)) {
+            return stylesheet;
         }
         return getConfigPath().resolve("public/css/asciidoctor-preview-theme-light.css");
     }
 
-    private void applyPreviewTheme(EditorConfigBean.Theme theme) {
-        boolean dark = "Dark".equalsIgnoreCase(theme.getThemeName());
-        previewThemeStylesheet = getConfigPath().resolve(
-                dark ? "public/css/asciidoctor-dark.css" : "public/css/asciidoctor-preview-theme-light.css");
+    private void applyPreviewTheme() {
         if (nonNull(htmlPane)) {
             htmlPane.applyPreviewStylesheet();
+        }
+        syncPreviewDarkToggle();
+    }
+
+    private void syncPreviewDarkToggle() {
+        if (isNull(previewDarkToggle)) {
+            return;
+        }
+        boolean dark = editorConfigBean.isPreviewDark();
+        previewDarkToggle.setText(dark ? "Dark" : "Light");
+        if (previewDarkToggle.getGraphic() instanceof FontIcon icon) {
+            icon.setIconLiteral(dark ? "fa-moon-o" : "fa-sun-o");
         }
     }
 

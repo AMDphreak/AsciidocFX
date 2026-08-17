@@ -6,6 +6,7 @@ import com.kodedu.helper.ClipboardHelper;
 import com.kodedu.other.Current;
 import com.kodedu.service.DirectoryService;
 import com.kodedu.service.ThreadService;
+import javafx.scene.paint.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,15 @@ public class HtmlPane extends ViewPanel {
         });
     }
 
+    @Override
+    public void applySurfaceColors() {
+        boolean dark = editorConfigBean.isPreviewDark();
+        String fill = dark ? "#121314" : "#ffffff";
+        getWebView().setPageFill(Color.web(fill));
+        getWebView().setStyle("-fx-background-color: " + fill + ";");
+        setStyle("-fx-background-color: " + fill + ";");
+    }
+
     private boolean isPreviewScriptReady() {
         try {
             Object ready = webEngine().executeScript("typeof refreshUI === 'function'");
@@ -108,6 +118,12 @@ public class HtmlPane extends ViewPanel {
     @Override
     public void browse() {
         controller.browseInDesktop(String.format(indexUrl, controller.getPort(), directoryService.interPath()));
+    }
+
+    @Override
+    public void browseDark() {
+        controller.browseInDesktop(appendQuery(
+                String.format(indexUrl, controller.getPort(), directoryService.interPath()), "theme", "dark"));
     }
 
     @Override

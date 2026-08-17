@@ -45,7 +45,8 @@ public class DynamicResource {
     @RequestMapping(value = {"/afx/dynamic", "/afx/dynamic/**", "/afx/dynamic/*.*"}, method = {GET, HEAD, OPTIONS, POST}, produces = "*/*", consumes = "*/*")
     @ResponseBody
     public void onrequest(HttpServletRequest request, HttpServletResponse response,
-                          @RequestParam(value = "p", required = false) String p) {
+                          @RequestParam(value = "p", required = false) String p,
+                          @RequestParam(value = "mode", required = false) String mode) {
 
         Payload payload = new Payload(request, response);
         payload.setPattern("/afx/dynamic/");
@@ -61,7 +62,7 @@ public class DynamicResource {
                 processResource(payload, stylesheetDefault);
                 return;
             } else if (p.contains("asciidoctor-preview-theme.css")) {
-                Path previewTheme = controller.getPreviewThemeStylesheet();
+                Path previewTheme = controller.getPreviewThemeStylesheet(mode);
                 if (Files.exists(previewTheme)) {
                     fileService.processFile(payload, previewTheme);
                 } else {

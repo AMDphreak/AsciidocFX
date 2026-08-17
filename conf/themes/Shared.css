@@ -306,6 +306,26 @@
     -fx-icon-color: -fx-text-fill;
 }
 
+.output-button.preview-theme, .output-button.preview-theme * {
+    -fx-text-fill: rgba(180, 190, 220, 0.9);
+    -fx-icon-color: -fx-text-fill;
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-font-size: 1.2em;
+    -fx-font-weight: bold;
+}
+
+.output-button.preview-theme:hover, .output-button.preview-theme:hover * {
+    -fx-text-fill: rgb(200, 210, 235);
+    -fx-icon-color: -fx-text-fill;
+}
+
+.output-button.preview-theme:selected, .output-button.preview-theme:selected * {
+    -fx-text-fill: rgb(160, 175, 230);
+    -fx-icon-color: -fx-text-fill;
+}
+
 /* file icons */
 .tree-view .label, .tree-view * {
     -fx-text-fill: -fx-text-base-color;
