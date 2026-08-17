@@ -3,6 +3,7 @@ package com.kodedu.copilot.component;
 import com.kodedu.copilot.CopilotMode;
 import com.kodedu.copilot.CopilotService;
 import com.kodedu.copilot.config.CopilotConfigBean;
+import com.kodedu.component.CopilotDock;
 import com.kodedu.config.EditorConfigBean;
 import com.kodedu.controller.ApplicationController;
 import com.kodedu.service.ThreadService;
@@ -104,9 +105,19 @@ public class CopilotPanel extends VBox {
         newChatButton.setOnAction(e -> handleNewChat());
         newChatButton.getStyleClass().add("copilot-new-chat-button");
 
+        MenuButton dockButton = new MenuButton();
+        dockButton.setGraphic(new FontIcon(FontAwesome.TH_LARGE));
+        dockButton.setTooltip(new Tooltip("Move Copilot"));
+        dockButton.getStyleClass().add("copilot-auth-button");
+        dockButton.getItems().addAll(
+                dockItem("Right of preview", CopilotDock.RIGHT_OF_PREVIEW),
+                dockItem("Bottom of window", CopilotDock.BOTTOM_OF_WINDOW),
+                dockItem("Pop-out window", CopilotDock.FLOAT)
+        );
+
         Pane spacer = new Pane();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-        header.getChildren().addAll(titleLabel, spacer, newChatButton, authButton, logoutButton);
+        header.getChildren().addAll(titleLabel, dockButton, spacer, newChatButton, authButton, logoutButton);
 
         // --- Mode selector ---
         modeToggleGroup = new ToggleGroup();
@@ -232,6 +243,12 @@ public class CopilotPanel extends VBox {
 
         // Update auth button state
         updateAuthButtons();
+    }
+
+    private MenuItem dockItem(String label, CopilotDock dock) {
+        MenuItem item = new MenuItem(label);
+        item.setOnAction(e -> controller.dockCopilot(dock));
+        return item;
     }
 
     private void handleSend() {

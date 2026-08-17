@@ -13,62 +13,7 @@
         <BorderPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
                     AnchorPane.topAnchor="0">
             <right>
-                <VBox prefWidth="20.0" fx:id="rightTooglesBox">
-                    <ToggleButton styleClass="corner-toggle-button,corner-bottom-half" selected="true"
-                                  onAction="#togglePreviewView"
-                                  prefWidth="20">
-                        <toggleGroup>
-                            <ToggleGroup fx:id="rightToggleGroup"/>
-                        </toggleGroup>
-                        <graphic>
-                            <Group>
-                                <Label text="Preview" rotate="90"></Label>
-                            </Group>
-                        </graphic>
-                        <padding>
-                            <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                        </padding>
-                    </ToggleButton>
-                    <ToggleButton toggleGroup="$rightToggleGroup" styleClass="corner-toggle-button,corner-bottom-half"
-                                  onAction="#toggleZenMode"
-                                  fx:id="toggleZenButton"
-                                  prefWidth="20">
-                        <graphic>
-                            <Group>
-                                <Label text="Preview Only" rotate="90"></Label>
-                            </Group>
-                        </graphic>
-                        <padding>
-                            <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                        </padding>
-                    </ToggleButton>
-                    <ToggleButton toggleGroup="$rightToggleGroup" styleClass="corner-toggle-button,corner-bottom-half"
-                                  onAction="#toggleConfigurationView"
-                                  fx:id="toggleConfigButton"
-                                  prefWidth="20">
-                        <graphic>
-                            <Group>
-                                <Label text="Settings" rotate="90"></Label>
-                            </Group>
-                        </graphic>
-                        <padding>
-                            <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                        </padding>
-                    </ToggleButton>
-                    <ToggleButton toggleGroup="$rightToggleGroup" styleClass="corner-toggle-button,corner-bottom-half"
-                                  onAction="#toggleCopilotView"
-                                  fx:id="toggleCopilotButton"
-                                  prefWidth="20">
-                        <graphic>
-                            <Group>
-                                <Label text="Copilot" rotate="90"></Label>
-                            </Group>
-                        </graphic>
-                        <padding>
-                            <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                        </padding>
-                    </ToggleButton>
-                </VBox>
+                <VBox fx:id="rightTooglesBox" managed="false" visible="false" prefWidth="0"/>
             </right>
             <bottom>
                 <HBox prefHeight="20.0">
@@ -114,66 +59,7 @@
                 </HBox>
             </bottom>
             <left>
-                <VBox prefWidth="20.0">
-                    <children>
-                        <ToggleButton styleClass="corner-toggle-button,corner-bottom-half" selected="true"
-                                      onAction="#toggleWorkdirView" fx:id="workdirToggle" prefWidth="20">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="leftToggleGroup"/>
-                            </toggleGroup>
-                            <graphic>
-                                <Group>
-                                    <Label text="Workdir" rotate="-90"></Label>
-                                </Group>
-                            </graphic>
-                            <padding>
-                                <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                            </padding>
-                        </ToggleButton>
-                        <ToggleButton toggleGroup="$leftToggleGroup"
-                                      styleClass="corner-toggle-button,corner-bottom-half"
-                                      onAction="#toggleOutlineView"
-                                      prefWidth="20">
-
-                            <graphic>
-                                <Group>
-                                    <Label text="Outline" rotate="-90"></Label>
-                                </Group>
-                            </graphic>
-                            <padding>
-                                <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                            </padding>
-                        </ToggleButton>
-                        <ToggleButton toggleGroup="$leftToggleGroup"
-                                      styleClass="corner-toggle-button,corner-bottom-half"
-                                      onAction="#toggleXrefView"
-                                      prefWidth="20">
-
-                            <graphic>
-                                <Group>
-                                    <Label text="References" rotate="-90"></Label>
-                                </Group>
-                            </graphic>
-                            <padding>
-                                <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                            </padding>
-                        </ToggleButton>
-                        <ToggleButton toggleGroup="$leftToggleGroup"
-                                      styleClass="corner-toggle-button,corner-bottom-half"
-                                      onAction="#toggleRecentView"
-                                      prefWidth="20">
-                            <graphic>
-                                <Group>
-                                    <Label text="Recent" rotate="-90"></Label>
-                                </Group>
-                            </graphic>
-                            <padding>
-                                <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                            </padding>
-                        </ToggleButton>
-
-                    </children>
-                </VBox>
+                <Pane managed="false" visible="false" prefWidth="0"/>
             </left>
             <center>
                 <SplitPane fx:id="mainVerticalSplitPane" id="mainVerticalSplitPane" dividerPositions="1.0"
@@ -323,8 +209,6 @@
                                                         </TreeView>
                                                     </master>
                                                     <slaves>
-                                                        <TreeView fx:id="outlineTreeView"/>
-                                                        <TreeTableView fx:id="refTreeTableView" showRoot="false"/>
                                                         <ListView id="recetListView" fx:id="recentListView"
                                                                   styleClass="recentListView">
                                                             <contextMenu>
@@ -361,10 +245,54 @@
                                         </StackPane>
                                     </children>
                                 </VBox>
+                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.22" minWidth="0">
+                                    <items>
+                                        <TabPane fx:id="documentNavTabs" minWidth="0" tabClosingPolicy="UNAVAILABLE"
+                                                 styleClass="document-nav-tabs">
+                                            <tabs>
+                                                <Tab closable="false" text="Outline">
+                                                    <content>
+                                                        <TreeView fx:id="outlineTreeView"/>
+                                                    </content>
+                                                </Tab>
+                                                <Tab closable="false" text="References">
+                                                    <content>
+                                                        <TreeTableView fx:id="refTreeTableView" showRoot="false"/>
+                                                    </content>
+                                                </Tab>
+                                            </tabs>
+                                        </TabPane>
                                 <SplitPane fx:id="editorSplitPane" orientation="VERTICAL">
                                     <items>
                                         <VBox minHeight="0" minWidth="0">
                                             <children>
+                                                <HBox alignment="CENTER_LEFT" spacing="6" styleClass="document-chrome">
+                                                    <padding>
+                                                        <Insets bottom="4.0" left="6.0" right="6.0" top="4.0"/>
+                                                    </padding>
+                                                    <children>
+                                                        <ToggleButton fx:id="outlineToggle" mnemonicParsing="false"
+                                                                      onAction="#toggleOutlineView" selected="true"
+                                                                      styleClass="chrome-button" text="Outline">
+                                                            <graphic>
+                                                                <FontIcon iconLiteral="fa-list"/>
+                                                            </graphic>
+                                                        </ToggleButton>
+                                                        <Pane HBox.hgrow="ALWAYS"/>
+                                                        <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
+                                                                      onAction="#togglePreviewView" selected="true"
+                                                                      styleClass="chrome-button,mode-segment" text="Preview">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="rightToggleGroup"/>
+                                                            </toggleGroup>
+                                                        </ToggleButton>
+                                                        <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
+                                                                      onAction="#toggleZenMode"
+                                                                      styleClass="chrome-button,mode-segment"
+                                                                      text="Preview Only"
+                                                                      toggleGroup="$rightToggleGroup"/>
+                                                    </children>
+                                                </HBox>
                                                 <TabPane fx:id="tabPane" minHeight="0" minWidth="0"
                                                          styleClass="floating"
                                                          tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0"
@@ -375,13 +303,15 @@
                                         </VBox>
                                     </items>
                                 </SplitPane>
+                                    </items>
+                                </SplitPane>
                                 <VBox fx:id="previewBox" minWidth="0" styleClass="preview-box" AnchorPane.bottomAnchor="0.0"
                                       AnchorPane.leftAnchor="0.0"
                                       AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                     <children>
                                         <HBox styleClass="menu-hbox, convert-box">
                                             <children>
-                                                <FlowPane hgap="15" prefWidth="-1.0" vgap="5">
+                                                <FlowPane hgap="10" prefWidth="-1.0" vgap="5">
                                                     <children>
                                                         <ProgressIndicator fx:id="indikator" managed="false"
                                                                            maxHeight="20.0"
@@ -390,32 +320,36 @@
                                                                            prefHeight="20.0" prefWidth="20.0"
                                                                            progress="-1.0"
                                                                            visible="false"/>
-                                                        <Label fx:id="htmlPro" minWidth="-Infinity"
-                                                               styleClass="output-button,html" text="HTML">
+                                                        <MenuButton fx:id="exportMenu" mnemonicParsing="false"
+                                                                    styleClass="chrome-button,export-menu" text="Export">
+                                                            <graphic>
+                                                                <FontIcon iconLiteral="fa-download"/>
+                                                            </graphic>
+                                                        </MenuButton>
+                                                        <Label fx:id="htmlPro" managed="false" minWidth="-Infinity"
+                                                               styleClass="output-button,html" visible="false" text="HTML">
                                                             <graphic>
                                                                 <FontIcon iconLiteral="fa-html5"/>
                                                             </graphic>
                                                         </Label>
-                                                        <Label fx:id="pdfPro" minWidth="-Infinity"
-                                                               styleClass="output-button,pdf" text="PDF">
+                                                        <Label fx:id="pdfPro" managed="false" minWidth="-Infinity"
+                                                               styleClass="output-button,pdf" visible="false" text="PDF">
                                                             <graphic>
                                                                 <FontIcon iconLiteral="fa-file-pdf-o"/>
                                                             </graphic>
                                                         </Label>
-                                                        <Label fx:id="ebookPro" minWidth="-Infinity"
-                                                               styleClass="output-button,ebook" text="Ebook">
+                                                        <Label fx:id="ebookPro" managed="false" minWidth="-Infinity"
+                                                               styleClass="output-button,ebook" visible="false" text="Ebook">
                                                             <graphic>
                                                                 <FontIcon iconLiteral="fa-book"/>
                                                             </graphic>
                                                         </Label>
-                                                        <Label fx:id="docbookPro" minWidth="-Infinity"
-                                                               styleClass="output-button,docbook" text="Docbook">
+                                                        <Label fx:id="docbookPro" managed="false" minWidth="-Infinity"
+                                                               styleClass="output-button,docbook" visible="false" text="Docbook">
                                                             <graphic>
                                                                 <FontIcon iconLiteral="fa-file-word-o"/>
                                                             </graphic>
                                                         </Label>
-                                                        <!--<Label fx:id="odfPro" minWidth="-Infinity" styleClass="docbook"-->
-                                                        <!--text="Odt"/>-->
                                                     </children>
                                                 </FlowPane>
                                                 <Pane maxWidth="1.7976931348623157E308" prefHeight="1.0" prefWidth="1.0"
@@ -425,27 +359,14 @@
                                                     </HBox.margin>
                                                 </Pane>
                                                 <HBox alignment="CENTER_RIGHT" spacing="10">
-                                                <Label fx:id="browserPro" alignment="CENTER" minWidth="-Infinity"
-                                                       styleClass="output-button,browser" text="Browser"
+                                                <Label fx:id="browserPro" alignment="CENTER" contentDisplay="RIGHT"
+                                                       minWidth="-Infinity"
+                                                       styleClass="output-button,browser,chrome-button" text="Open in Browser"
                                                        textAlignment="LEFT">
                                                     <graphic>
-                                                        <FontIcon iconLiteral="fa-flash"/>
+                                                        <FontIcon iconLiteral="fa-external-link"/>
                                                     </graphic>
                                                 </Label>
-                                                <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
-                                                              contentDisplay="GRAPHIC_ONLY"
-                                                              focusTraversable="false"
-                                                              minHeight="28.0" minWidth="32.0"
-                                                              prefHeight="28.0" prefWidth="32.0"
-                                                              mnemonicParsing="false" text=""
-                                                              styleClass="preview-theme-toggle">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-moon-o"/>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Dark or light document preview in the app. Browser stays light unless you choose Open dark."/>
-                                                    </tooltip>
-                                                </ToggleButton>
                                                 </HBox>
                                             </children>
                                             <padding>
@@ -514,6 +435,66 @@
                 </SplitPane>
             </center>
             <top>
+                <HBox fx:id="topChromeBar" alignment="CENTER_LEFT" spacing="8" styleClass="top-chrome">
+                    <padding>
+                        <Insets bottom="6.0" left="8.0" right="8.0" top="6.0"/>
+                    </padding>
+                    <children>
+                        <ToggleButton fx:id="workdirToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
+                                      onAction="#toggleWorkdirView" selected="true" styleClass="chrome-button">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="leftToggleGroup"/>
+                            </toggleGroup>
+                            <graphic>
+                                <FontIcon iconLiteral="fa-folder-open-o"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Workdir"/>
+                            </tooltip>
+                        </ToggleButton>
+                        <ToggleButton fx:id="recentToggle" mnemonicParsing="false" onAction="#toggleRecentView"
+                                      styleClass="chrome-button" text="Recent" toggleGroup="$leftToggleGroup">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-clock-o"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Recent files"/>
+                            </tooltip>
+                        </ToggleButton>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <ToggleButton fx:id="toggleCopilotButton" mnemonicParsing="false" onAction="#toggleCopilotView"
+                                      styleClass="chrome-button" text="Copilot">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-commenting"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Copilot"/>
+                            </tooltip>
+                        </ToggleButton>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <ToggleButton fx:id="previewDarkToggle" alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
+                                      focusTraversable="false" minHeight="28.0" minWidth="32.0" mnemonicParsing="false"
+                                      prefHeight="28.0" prefWidth="32.0" styleClass="chrome-button,preview-theme-toggle"
+                                      text="">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-moon-o"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip
+                                        text="Dark or light document preview in the app. Browser stays light unless you choose Open dark."/>
+                            </tooltip>
+                        </ToggleButton>
+                        <ToggleButton fx:id="toggleConfigButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
+                                      onAction="#toggleConfigurationView" styleClass="chrome-button">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-cog"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Settings"/>
+                            </tooltip>
+                        </ToggleButton>
+                    </children>
+                </HBox>
             </top>
         </BorderPane>
     </children>

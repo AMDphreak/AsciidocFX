@@ -152,6 +152,13 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public VBox terminalLeftBox;
     public TabPane terminalTabPane;
     public ToggleButton workdirToggle;
+    public ToggleButton recentToggle;
+    public ToggleButton outlineToggle;
+    public ToggleButton previewSplitToggle;
+    public ToggleButton toggleZenButton;
+    public MenuButton exportMenu;
+    public SplitPane documentSplitPane;
+    public TabPane documentNavTabs;
     public ShowerHider leftShowerHider;
     public ShowerHider rightShowerHider;
     public ShowerHider bottomShowerHider;
@@ -215,6 +222,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     private AnchorPane markdownTableAnchor;
     private Stage markdownTableStage;
     public TreeView<Section> outlineTreeView;
+
+    private CopilotDock copilotDock = CopilotDock.RIGHT_OF_PREVIEW;
+    private Stage copilotFloatStage;
 
     private Path userHome = IOHelper.getPath(System.getProperty("user.home"));
 
@@ -563,6 +573,11 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         tabPane.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
         terminalTabPane.setTabDragPolicy(TabPane.TabDragPolicy.REORDER);
+        tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
+            if (newTab instanceof MyTab myTab) {
+                applyTabChrome(myTab);
+            }
+        });
 
         port = Integer.parseInt(environment.getProperty("local.server.port"));
         htmlPane.loadInitialUrl();
@@ -777,6 +792,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         })).collect(Collectors.toList());
         browserContextMenu.getItems().addAll(browserMenuItem);
         browserPro.setContextMenu(browserContextMenu);
+
+        wireExportMenu();
+        wireDocumentChrome();
 
         fileSystemView.setCellFactory(param -> {
             TreeCell<Item> cell = new TextFieldTreeCell<Item>();
@@ -2612,8 +2630,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     public void adjustSplitPane() {
 
-        final Toggle selectedToggle1 = leftToggleGroup.getSelectedToggle();
-        final Toggle selectedToggle2 = rightToggleGroup.getSelectedToggle();
+        final Toggle selectedToggle1 = leftToggleGroup == null ? null : leftToggleGroup.getSelectedToggle();
+        final Toggle selectedToggle2 = rightToggleGroup == null ? null : rightToggleGroup.getSelectedToggle();
         if (nonNull(selectedToggle1)) {
             ((ToggleButton) selectedToggle1).fire();
         }
@@ -2622,8 +2640,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             ((ToggleButton) selectedToggle2).fire();
         }
 
-        if (isNull(selectedToggle1) && isNull(selectedToggle2)) {
+        if (isNull(selectedToggle1) && nonNull(leftToggleGroup) && !leftToggleGroup.getToggles().isEmpty()) {
             ((ToggleButton) leftToggleGroup.getToggles().get(0)).fire();
+        }
+        if (isNull(selectedToggle2) && nonNull(rightToggleGroup) && !rightToggleGroup.getToggles().isEmpty()) {
             ((ToggleButton) rightToggleGroup.getToggles().get(0)).fire();
         }
     }
@@ -3045,68 +3065,76 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     @FXML
     public void toggleRecentView(ActionEvent actionEvent) {
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(0, source.isSelected() ? 0.17 : 0);
-        if (source.isSelected()) {
+        boolean selected = recentToggle != null && recentToggle.isSelected();
+        splitPane.setDividerPosition(0, selected ? 0.17 : 0);
+        if (selected) {
             leftShowerHider.showNode(recentListView);
         }
     }
 
     @FXML
     public void toggleWorkdirView(ActionEvent actionEvent) {
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(0, source.isSelected() ? 0.17 : 0);
-        if (source.isSelected()) {
+        boolean selected = workdirToggle != null && workdirToggle.isSelected();
+        splitPane.setDividerPosition(0, selected ? 0.17 : 0);
+        if (selected) {
             leftShowerHider.showDefaultNode();
         }
     }
 
     public void toggleXrefView(ActionEvent actionEvent) {
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(0, source.isSelected() ? 0.17 : 0);
-        if (source.isSelected()) {
-            leftShowerHider.showNode(refTreeTableView, () -> {
-                current.currentEditor().rerender(); // to refit columns
-            });
+        applyOutlineVisibility(true);
+        if (outlineToggle != null) {
+            outlineToggle.setSelected(true);
+        }
+        MyTab tab = current.currentTab();
+        if (tab != null) {
+            tab.setOutlineVisible(true);
+        }
+        if (documentNavTabs != null && documentNavTabs.getTabs().size() > 1) {
+            documentNavTabs.getSelectionModel().select(1);
+        }
+        if (current.currentEditor() != null) {
+            current.currentEditor().rerender();
         }
     }
 
     @FXML
     public void toggleOutlineView(ActionEvent actionEvent) {
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(0, source.isSelected() ? 0.17 : 0);
-        if (source.isSelected()) {
-            leftShowerHider.showNode(outlineTreeView);
+        boolean selected = outlineToggle == null || outlineToggle.isSelected();
+        MyTab tab = current.currentTab();
+        if (tab != null) {
+            tab.setOutlineVisible(selected);
         }
+        applyOutlineVisibility(selected);
     }
 
     @FXML
     public void togglePreviewView(ActionEvent actionEvent) {
         browserPro.setVisible(true);
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(1, source.isSelected() ? 0.59 : 1);
-        if (source.isSelected()) {
-            rightShowerHider.showDefaultNode();
+        MyTab tab = current.currentTab();
+        if (tab != null) {
+            tab.setPreviewOnly(false);
         }
-
+        restoreMainDividers();
+        rightShowerHider.showDefaultNode();
     }
 
     @FXML
     public void toggleZenMode(ActionEvent actionEvent) {
         browserPro.setVisible(true);
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        final boolean selected = source.isSelected();
+        boolean selected = toggleZenButton != null && toggleZenButton.isSelected();
+        MyTab tab = current.currentTab();
+        if (tab != null) {
+            tab.setPreviewOnly(selected);
+        }
 
-        if(selected)  {
+        if (selected) {
             splitPane.setDividerPositions(0, 0);
             rightShowerHider.showDefaultNode();
         } else {
-            // I was able to set divisions back this way
             splitPane.setDividerPositions(1, 1);
-            threadService.schedule(()-> {
-                threadService.runActionLater(()-> {
-                    splitPane.setDividerPositions(0.17, 0.59);
-                });
+            threadService.schedule(() -> {
+                threadService.runActionLater(this::restoreMainDividers);
             }, 25, TimeUnit.MILLISECONDS);
         }
     }
@@ -3115,20 +3143,31 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public void toggleConfigurationView(ActionEvent actionEvent) {
         browserPro.setVisible(false);
         final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(1, source.isSelected() ? 0.59 : 1);
         if (source.isSelected()) {
+            if (toggleCopilotButton != null) {
+                toggleCopilotButton.setSelected(false);
+            }
+            undockCopilot();
+            splitPane.setDividerPosition(Math.min(1, splitPane.getDividers().size()), 0.59);
+            restoreMainDividers();
             rightShowerHider.showNode(configBox);
+        } else {
+            browserPro.setVisible(true);
+            rightShowerHider.showDefaultNode();
         }
-
     }
 
     @FXML
     public void toggleCopilotView(ActionEvent actionEvent) {
-        browserPro.setVisible(false);
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        splitPane.setDividerPosition(1, source.isSelected() ? 0.59 : 1);
-        if (source.isSelected()) {
-            rightShowerHider.showNode(copilotPanel);
+        browserPro.setVisible(true);
+        if (toggleCopilotButton != null && toggleCopilotButton.isSelected()) {
+            if (toggleConfigButton != null) {
+                toggleConfigButton.setSelected(false);
+            }
+            rightShowerHider.showDefaultNode();
+            dockCopilot(copilotDock);
+        } else {
+            undockCopilot();
         }
     }
 
@@ -3164,6 +3203,147 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     public ShowerHider getRightShowerHider() {
         return rightShowerHider;
+    }
+
+    private void wireExportMenu() {
+        if (exportMenu == null) {
+            return;
+        }
+        exportMenu.getItems().setAll(
+                menuFromExportLabel(htmlPro, "html"),
+                menuFromExportLabel(pdfPro, "pdf"),
+                menuFromExportLabel(ebookPro, "ebook"),
+                menuFromExportLabel(docbookPro, "docbook")
+        );
+    }
+
+    private Menu menuFromExportLabel(Label label, String style) {
+        Menu menu = new Menu(label.getText());
+        if (label.getGraphic() instanceof FontIcon source) {
+            FontIcon icon = new FontIcon();
+            icon.setIconLiteral(source.getIconLiteral());
+            menu.setGraphic(icon);
+        }
+        menu.getStyleClass().addAll("output-button", style);
+        ContextMenu context = label.getContextMenu();
+        if (context != null) {
+            menu.getItems().addAll(context.getItems());
+        }
+        return menu;
+    }
+
+    private void wireDocumentChrome() {
+        applyOutlineVisibility(outlineToggle == null || outlineToggle.isSelected());
+    }
+
+    private void applyTabChrome(MyTab tab) {
+        if (outlineToggle != null) {
+            outlineToggle.setSelected(tab.isOutlineVisible());
+        }
+        applyOutlineVisibility(tab.isOutlineVisible());
+        if (tab.isPreviewOnly()) {
+            if (toggleZenButton != null) {
+                toggleZenButton.setSelected(true);
+            }
+            splitPane.setDividerPositions(0, 0);
+        } else {
+            if (previewSplitToggle != null) {
+                previewSplitToggle.setSelected(true);
+            }
+            restoreMainDividers();
+        }
+    }
+
+    private void applyOutlineVisibility(boolean visible) {
+        if (documentNavTabs == null || documentSplitPane == null) {
+            return;
+        }
+        documentNavTabs.setVisible(visible);
+        documentNavTabs.setManaged(visible);
+        documentSplitPane.setDividerPosition(0, visible ? 0.22 : 0);
+    }
+
+    public CopilotDock getCopilotDock() {
+        return copilotDock;
+    }
+
+    public void dockCopilot(CopilotDock dock) {
+        if (dock == null) {
+            dock = CopilotDock.RIGHT_OF_PREVIEW;
+        }
+        this.copilotDock = dock;
+        undockCopilotKeepToggle();
+        if (toggleCopilotButton != null && !toggleCopilotButton.isSelected()) {
+            toggleCopilotButton.setSelected(true);
+        }
+        switch (dock) {
+            case BOTTOM_OF_WINDOW -> {
+                if (!mainVerticalSplitPane.getItems().contains(copilotPanel)) {
+                    mainVerticalSplitPane.getItems().add(1, copilotPanel);
+                }
+                mainVerticalSplitPane.setDividerPositions(0.62, 0.86);
+            }
+            case FLOAT -> {
+                if (copilotFloatStage == null) {
+                    copilotFloatStage = new Stage();
+                    copilotFloatStage.initOwner(stage);
+                    copilotFloatStage.setTitle("Copilot");
+                    copilotFloatStage.setOnCloseRequest(event -> {
+                        if (toggleCopilotButton != null) {
+                            toggleCopilotButton.setSelected(false);
+                        }
+                        undockCopilot();
+                    });
+                }
+                Scene floatScene = copilotPanel.getScene();
+                if (floatScene == null || floatScene.getRoot() != copilotPanel) {
+                    copilotFloatStage.setScene(new Scene(copilotPanel, 420, 640));
+                }
+                copilotFloatStage.show();
+                copilotFloatStage.toFront();
+            }
+            default -> {
+                if (!splitPane.getItems().contains(copilotPanel)) {
+                    splitPane.getItems().add(copilotPanel);
+                }
+                restoreMainDividers();
+            }
+        }
+    }
+
+    public void undockCopilot() {
+        undockCopilotKeepToggle();
+        if (toggleCopilotButton != null) {
+            toggleCopilotButton.setSelected(false);
+        }
+        restoreMainDividers();
+    }
+
+    private void undockCopilotKeepToggle() {
+        splitPane.getItems().remove(copilotPanel);
+        mainVerticalSplitPane.getItems().remove(copilotPanel);
+        if (copilotFloatStage != null) {
+            copilotFloatStage.hide();
+        }
+        if (copilotPanel.getParent() != null && copilotFloatStage != null
+                && copilotFloatStage.getScene() != null
+                && copilotFloatStage.getScene().getRoot() == copilotPanel) {
+            copilotFloatStage.setScene(null);
+        }
+    }
+
+    private void restoreMainDividers() {
+        boolean copilotRight = copilotDock == CopilotDock.RIGHT_OF_PREVIEW
+                && splitPane.getItems().contains(copilotPanel);
+        if (current.currentTab() != null && current.currentTab().isPreviewOnly()) {
+            splitPane.setDividerPositions(0, 0);
+            return;
+        }
+        if (copilotRight) {
+            splitPane.setDividerPositions(0.15, 0.48, 0.74);
+        } else {
+            splitPane.setDividerPositions(0.17, 0.59);
+        }
     }
 
     public void setHostServices(HostServices hostServices) {

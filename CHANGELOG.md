@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes are documented in this file.
+
+## Unreleased
+
+* Replace rotated side rails with a top chrome bar, per-tab Outline/References, Export menu, Open in Browser, and a dockable Copilot pane to the right of preview
+
 ## [Version ~1.8.11](https://github.com/asciidocfx/AsciidocFX/releases/tag/v1.8.11) (10.2025)
 
 * Java/FX 25

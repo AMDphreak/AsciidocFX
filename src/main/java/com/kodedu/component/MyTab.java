@@ -59,6 +59,9 @@ public class MyTab extends Tab {
 
     private final Logger logger = LoggerFactory.getLogger(MyTab.class);
 
+    private boolean outlineVisible = true;
+    private boolean previewOnly = false;
+
     @Autowired
     public MyTab(EditorPane editorPane, StoredConfigBean storedConfigBean, DirectoryService directoryService, TabService tabService, ApplicationController controller, ThreadService threadService) {
         this.editorPane = editorPane;
@@ -384,6 +387,22 @@ public class MyTab extends Tab {
 
     public Path getParentOrWorkdir() {
         return Optional.ofNullable(getPath()).map(Path::getParent).orElse(directoryService.workingDirectory());
+    }
+
+    public boolean isOutlineVisible() {
+        return outlineVisible;
+    }
+
+    public void setOutlineVisible(boolean outlineVisible) {
+        this.outlineVisible = outlineVisible;
+    }
+
+    public boolean isPreviewOnly() {
+        return previewOnly;
+    }
+
+    public void setPreviewOnly(boolean previewOnly) {
+        this.previewOnly = previewOnly;
     }
 
     public boolean isReady() {

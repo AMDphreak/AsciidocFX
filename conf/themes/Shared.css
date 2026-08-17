@@ -267,12 +267,12 @@
 }
 
 .output-button.pdf *, .output-button.pdf {
-    -fx-text-fill: rgba(255, 0, 0, 0.43);
+    -fx-text-fill: #ff6f73;
     -fx-icon-color: -fx-text-fill;
 }
 
 .output-button.pdf *:hover, .output-button.pdf:hover {
-    -fx-text-fill: rgba(255, 0, 0, 0.68);
+    -fx-text-fill: #ff9a9c;
     -fx-icon-color: -fx-text-fill;
 }
 
@@ -306,6 +306,7 @@
     -fx-icon-color: -fx-text-fill;
 }
 
+.top-chrome .preview-theme-toggle,
 .convert-box .preview-theme-toggle {
     -fx-background-radius: 6;
     -fx-border-radius: 6;
@@ -315,7 +316,50 @@
     -fx-content-display: graphic-only;
 }
 
+.top-chrome .preview-theme-toggle .ikonli-font-icon,
 .convert-box .preview-theme-toggle .ikonli-font-icon {
+    -fx-icon-color: -fx-text-fill;
+}
+
+.top-chrome {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.chrome-button {
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: derive(-fx-text-base-color, 40%);
+    -fx-border-width: 1;
+    -fx-padding: 4 10;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+}
+
+.chrome-button:hover,
+.chrome-button:selected,
+.chrome-button:armed {
+    -fx-background-color: derive(-fx-base, 18%);
+}
+
+.chrome-button:selected {
+    -fx-border-color: derive(-fx-text-base-color, 10%);
+}
+
+.mode-segment {
+    -fx-background-radius: 6;
+}
+
+.document-chrome {
+    -fx-spacing: 6;
+}
+
+.document-nav-tabs {
+    -fx-min-width: 0;
+}
+
+.export-menu .output-button.pdf,
+.export-menu .output-button.pdf * {
+    -fx-text-fill: #ff6f73;
     -fx-icon-color: -fx-text-fill;
 }
 
