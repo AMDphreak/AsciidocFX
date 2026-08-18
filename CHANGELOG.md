@@ -4,6 +4,7 @@ All notable changes are documented in this file.
 
 ## Unreleased
 
+* Default spell check follows the OS locale instead of the first reverse-sorted dictionary (Turkish)
 * Composing-desk layout: identity strip, facing source and page sheets, typecase slugs, and Ask as a sheet above the case
 
 ## [Version ~1.8.11](https://github.com/asciidocfx/AsciidocFX/releases/tag/v1.8.11) (10.2025)
