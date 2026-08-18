@@ -61,8 +61,10 @@ public class EditorConfigBean extends ConfigurationBase {
     private DoubleProperty secondSplitter = new SimpleDoubleProperty(0.5996920708237106);
     private DoubleProperty verticalSplitter = new SimpleDoubleProperty(0.5);
     private DoubleProperty documentNavSplitter = new SimpleDoubleProperty(0.34);
-    private DoubleProperty outlineContrast = new SimpleDoubleProperty(1.0);
-    private DoubleProperty backgroundContrast = new SimpleDoubleProperty(1.0);
+    private DoubleProperty outlineContrast = new SimpleDoubleProperty(0.8);
+    private DoubleProperty backgroundContrast = new SimpleDoubleProperty(0.8);
+    private DoubleProperty chromeContrast = new SimpleDoubleProperty(0.8);
+    private StringProperty chromeOverlay = new SimpleStringProperty("");
     private ObjectProperty<Integer> aceFontSize = new SimpleObjectProperty(16);
     private ObjectProperty<Integer> editorFontSize = new SimpleObjectProperty(14);
     private DoubleProperty scrollSpeed = new SimpleDoubleProperty(5);
@@ -542,6 +544,30 @@ public class EditorConfigBean extends ConfigurationBase {
         this.backgroundContrast.set(backgroundContrast);
     }
 
+    public double getChromeContrast() {
+        return chromeContrast.get();
+    }
+
+    public DoubleProperty chromeContrastProperty() {
+        return chromeContrast;
+    }
+
+    public void setChromeContrast(double chromeContrast) {
+        this.chromeContrast.set(chromeContrast);
+    }
+
+    public String getChromeOverlay() {
+        return chromeOverlay.get();
+    }
+
+    public StringProperty chromeOverlayProperty() {
+        return chromeOverlay;
+    }
+
+    public void setChromeOverlay(String chromeOverlay) {
+        this.chromeOverlay.set(chromeOverlay == null ? "" : chromeOverlay);
+    }
+
     @Override
     public String formName() {
         return "Editor Settings";
@@ -772,6 +798,14 @@ public class EditorConfigBean extends ConfigurationBase {
                 this.setBackgroundContrast(jsonObject.getJsonNumber("backgroundContrast").doubleValue());
             }
 
+            if (JsonHelper.containsNumber(jsonObject, "chromeContrast")) {
+                this.setChromeContrast(jsonObject.getJsonNumber("chromeContrast").doubleValue());
+            }
+
+            if (jsonObject.containsKey("chromeOverlay")) {
+                this.setChromeOverlay(jsonObject.getString("chromeOverlay", ""));
+            }
+
             fadeOut(infoLabel, "Loaded...");
 
         });
@@ -891,6 +925,8 @@ public class EditorConfigBean extends ConfigurationBase {
                 .add("documentNavSplitter", getDocumentNavSplitter())
                 .add("outlineContrast", getOutlineContrast())
                 .add("backgroundContrast", getBackgroundContrast())
+                .add("chromeContrast", getChromeContrast())
+                .add("chromeOverlay", getChromeOverlay() == null ? "" : getChromeOverlay())
                 .add("autoUpdate", getAutoUpdate())
                 .add("showHiddenFiles", getShowHiddenFiles())
                 .add("newInstall", getNewInstall())

@@ -17,6 +17,7 @@ import com.kodedu.logging.TableViewLogAppender;
 import com.kodedu.other.ConverterResult;
 import com.kodedu.other.Current;
 import com.kodedu.other.DocumentMode;
+import com.kodedu.other.ExtensionFilters;
 import com.kodedu.other.Item;
 import com.kodedu.other.RefProps;
 import com.kodedu.outline.Section;
@@ -78,6 +79,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
@@ -174,6 +176,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public VBox configBox;
     public ToggleGroup rightToggleGroup;
     public ToggleButton toggleConfigButton;
+    public CheckMenuItem settingsMenuItem;
     public ToggleButton toggleCopilotButton;
     public Label basicSearch;
     public Button newTerminalButton;
@@ -216,6 +219,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public Button workspaceIndexButton;
     public Slider outlineContrastSlider;
     public Slider backgroundContrastSlider;
+    public Slider chromeContrastSlider;
+    public ColorPicker chromeOverlayColorPicker;
+    public Region copilotPeekSlot;
     public Menu menuTemplates;
     public Label htmlPro;
     public Label pdfPro;
@@ -230,9 +236,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     private Stage markdownTableStage;
     public TreeView<Section> outlineTreeView;
 
-    private CopilotDock copilotDock = CopilotDock.RIGHT_OF_PREVIEW;
+    private CopilotDock copilotDock = CopilotDock.WORKDIR_PEEK;
     private Stage copilotFloatStage;
     private CopilotDropOverlay copilotDropOverlay;
+    private CopilotPeekHost copilotPeekHost;
     private EventHandler<MouseEvent> copilotDragMove;
     private EventHandler<MouseEvent> copilotDragRelease;
     private WorkspaceIndexStage workspaceIndexStage;
@@ -1506,7 +1513,19 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     private Stage[] getAllStages() {
-        return new Stage[]{stage, detachStage, asciidocTableStage, markdownTableStage};
+        List<Stage> stages = new ArrayList<>();
+        stages.add(stage);
+        stages.add(detachStage);
+        stages.add(asciidocTableStage);
+        stages.add(markdownTableStage);
+        stages.add(copilotFloatStage);
+        if (configurationService != null) {
+            stages.add(configurationService.getSettingsStage());
+        }
+        if (workspaceIndexStage != null) {
+            stages.add(workspaceIndexStage.getStage());
+        }
+        return stages.stream().filter(Objects::nonNull).toArray(Stage[]::new);
     }
 
     public void bindConfigurations() {
@@ -1569,13 +1588,17 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         }
         if (documentSplitPane != null && !documentSplitPane.getDividers().isEmpty()) {
             documentSplitPane.getDividers().get(0).positionProperty().addListener((observable, oldValue, position) -> {
-                if (documentNavTabs != null && documentNavTabs.isVisible() && position.doubleValue() > 0.08) {
+                if (position.doubleValue() > 0.08) {
                     editorConfigBean.setDocumentNavSplitter(position.doubleValue());
+                    if (outlineToggle != null && !outlineToggle.isSelected()) {
+                        outlineToggle.setSelected(true);
+                    }
                 }
             });
             editorConfigBean.documentNavSplitterProperty().addListener((observable, oldValue, position) -> {
-                if (documentNavTabs != null && documentNavTabs.isVisible()
-                        && Math.abs(documentSplitPane.getDividerPositions()[0] - position.doubleValue()) > 0.001) {
+                if (documentNavTabs != null
+                        && Math.abs(documentSplitPane.getDividerPositions()[0] - position.doubleValue()) > 0.001
+                        && documentSplitPane.getDividerPositions()[0] > 0.05) {
                     documentSplitPane.setDividerPosition(0, position.doubleValue());
                 }
             });
@@ -1652,6 +1675,33 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         if (backgroundContrastSlider != null) {
             backgroundContrastSlider.valueProperty().bindBidirectional(editorConfigBean.backgroundContrastProperty());
             backgroundContrastSlider.valueProperty().addListener((observable, oldValue, newValue) -> applyChromeSurfaces());
+        }
+        if (chromeContrastSlider != null) {
+            chromeContrastSlider.valueProperty().bindBidirectional(editorConfigBean.chromeContrastProperty());
+            chromeContrastSlider.valueProperty().addListener((observable, oldValue, newValue) -> applyChromeSurfaces());
+        }
+        if (chromeOverlayColorPicker != null) {
+            chromeOverlayColorPicker.setStyle("-fx-color-label-visible: false;");
+            String savedOverlay = editorConfigBean.getChromeOverlay();
+            if (savedOverlay != null && !savedOverlay.isBlank()) {
+                try {
+                    chromeOverlayColorPicker.setValue(javafx.scene.paint.Color.web(savedOverlay));
+                } catch (IllegalArgumentException ex) {
+                    chromeOverlayColorPicker.setValue(javafx.scene.paint.Color.web("#737373"));
+                }
+            } else {
+                chromeOverlayColorPicker.setValue(javafx.scene.paint.Color.web("#737373"));
+            }
+            chromeOverlayColorPicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue == null) {
+                    return;
+                }
+                editorConfigBean.setChromeOverlay(String.format("#%02x%02x%02x",
+                        (int) Math.round(newValue.getRed() * 255),
+                        (int) Math.round(newValue.getGreen() * 255),
+                        (int) Math.round(newValue.getBlue() * 255)));
+                applyChromeSurfaces();
+            });
         }
 
         storedConfigBean.workingDirectoryProperty().addListener((observable, oldValue, newValue) -> {
@@ -2168,16 +2218,16 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         TreeTableColumn<RefProps, String> fileColumn = new TreeTableColumn<>("File");
         fileColumn.setSortable(false);
-        TreeTableColumn<RefProps, String> refColumn = new TreeTableColumn<>("Ref");
+        TreeTableColumn<RefProps, String> refColumn = new TreeTableColumn<>("Link");
         refColumn.setSortable(true);
         TreeTableColumn<RefProps, Number> lineColumn = new TreeTableColumn<>("Line");
         lineColumn.setSortable(true);
 
         TreeItem<RefProps> rootItem = new TreeItem<>(new RefProps(null, -1, null));
         rootItem.setExpanded(true);
-        TreeItem<RefProps> refRootItem = new TreeItem<>(new RefProps("#Refs", -1, null), new FontIcon(FontAwesome.ANCHOR));
+        TreeItem<RefProps> refRootItem = new TreeItem<>(new RefProps("#Internal References", -1, null), new FontIcon(FontAwesome.ANCHOR));
         refRootItem.setExpanded(true);
-        TreeItem<RefProps> xrefRootItem = new TreeItem<>(new RefProps("#Cross Refs", -1, null), new FontIcon(FontAwesome.LINK));
+        TreeItem<RefProps> xrefRootItem = new TreeItem<>(new RefProps("#Xrefs", -1, null), new FontIcon(FontAwesome.LINK));
         xrefRootItem.setExpanded(true);
         rootItem.getChildren().add(refRootItem);
         rootItem.getChildren().add(xrefRootItem);
@@ -2330,9 +2380,56 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     @FXML
     public void changeWorkingDir(Event actionEvent) {
-        directoryService.askWorkingDir();
-        directoryService.getWorkingDirectory().ifPresent(storedConfigBean::activateWorkspace);
-        updateWorkdirBreadcrumb(directoryService.getWorkingDirectory().orElse(null));
+        ButtonType folderType = new ButtonType("Folder");
+        ButtonType fileType = new ButtonType("File");
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.initOwner(getStage());
+        alert.initModality(Modality.WINDOW_MODAL);
+        alert.setTitle("Open");
+        alert.setHeaderText("What do you want to open?");
+        alert.setContentText("Folder sets the working directory. File opens one or more documents.");
+        alert.getButtonTypes().setAll(folderType, fileType, ButtonType.CANCEL);
+        Optional<ButtonType> choice = alert.showAndWait();
+        if (choice.isEmpty() || choice.get() == ButtonType.CANCEL) {
+            return;
+        }
+        if (choice.get() == folderType) {
+            directoryService.askWorkingDir();
+            directoryService.getWorkingDirectory().ifPresent(storedConfigBean::activateWorkspace);
+            showFilesPane(true);
+            updateWorkdirBreadcrumb(directoryService.getWorkingDirectory().orElse(null));
+            return;
+        }
+        openFilesIntoWorkspace();
+    }
+
+    private void openFilesIntoWorkspace() {
+        FileChooser fileChooser = directoryService.newFileChooser("Open File");
+        if (OSHelper.isWindows()) {
+            fileChooser.getExtensionFilters().add(ExtensionFilters.ASCIIDOC);
+            fileChooser.getExtensionFilters().add(ExtensionFilters.MARKDOWN);
+            fileChooser.getExtensionFilters().add(ExtensionFilters.ALL);
+        }
+        List<File> chosenFiles = fileChooser.showOpenMultipleDialog(getStage());
+        if (chosenFiles == null || chosenFiles.isEmpty()) {
+            return;
+        }
+        boolean hadWorkspace = storedConfigBean.findOpenWorkspace().isPresent();
+        chosenFiles.stream().map(File::toPath).forEach(tabService::previewDocument);
+        ObservableList<Item> recentFiles = storedConfigBean.getRecentFiles();
+        chosenFiles.stream()
+                .map(file -> new Item(file.toPath()))
+                .filter(item -> !recentFiles.contains(item))
+                .forEach(recentFiles::add);
+        directoryService.setInitialDirectory(Optional.ofNullable(chosenFiles.get(0)));
+        if (!hadWorkspace) {
+            Path parent = chosenFiles.get(0).toPath().getParent();
+            if (parent != null) {
+                directoryService.changeWorkigDir(parent);
+                storedConfigBean.activateWorkspace(parent);
+                showFilesPane(true);
+            }
+        }
     }
 
     @Override
@@ -3143,6 +3240,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 leftShowerHider.showDefaultNode();
             }
         }
+        if (copilotPeekHost != null && copilotDock == CopilotDock.WORKDIR_PEEK) {
+            copilotPeekHost.setVisible(selected);
+        }
     }
 
     public void toggleXrefView(ActionEvent actionEvent) {
@@ -3202,19 +3302,71 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     @FXML
     public void toggleConfigurationView(ActionEvent actionEvent) {
-        browserPro.setVisible(false);
-        final ToggleButton source = (ToggleButton) actionEvent.getSource();
-        if (source.isSelected()) {
+        boolean selected = settingsMenuItem != null && settingsMenuItem.isSelected();
+        if (toggleConfigButton != null && actionEvent != null && actionEvent.getSource() == toggleConfigButton) {
+            selected = toggleConfigButton.isSelected();
+        }
+        if (selected) {
             if (toggleCopilotButton != null) {
                 toggleCopilotButton.setSelected(false);
             }
-            undockCopilot();
-            splitPane.setDividerPosition(Math.min(1, splitPane.getDividers().size()), 0.59);
-            restoreMainDividers();
-            rightShowerHider.showNode(configBox);
+            if (copilotDock != CopilotDock.WORKDIR_PEEK) {
+                undockCopilot();
+            }
+            if (configurationService != null && configurationService.isPoppedOut()) {
+                configurationService.focusPopOut();
+                browserPro.setVisible(true);
+            } else {
+                browserPro.setVisible(false);
+                splitPane.setDividerPosition(Math.min(1, splitPane.getDividers().size()), 0.59);
+                restoreMainDividers();
+                rightShowerHider.showNode(configBox);
+            }
         } else {
+            if (configurationService != null && configurationService.isPoppedOut()) {
+                configurationService.dock(false);
+            }
             browserPro.setVisible(true);
             rightShowerHider.showDefaultNode();
+        }
+        if (settingsMenuItem != null) {
+            settingsMenuItem.setSelected(selected);
+        }
+        if (toggleConfigButton != null) {
+            toggleConfigButton.setSelected(selected);
+        }
+    }
+
+    public void onSettingsPoppedOut() {
+        browserPro.setVisible(true);
+        rightShowerHider.showDefaultNode();
+        if (settingsMenuItem != null) {
+            settingsMenuItem.setSelected(true);
+        }
+        if (toggleConfigButton != null) {
+            toggleConfigButton.setSelected(true);
+        }
+    }
+
+    public void onSettingsDocked(boolean showDocked) {
+        if (showDocked) {
+            browserPro.setVisible(false);
+            rightShowerHider.showNode(configBox);
+            if (settingsMenuItem != null) {
+                settingsMenuItem.setSelected(true);
+            }
+            if (toggleConfigButton != null) {
+                toggleConfigButton.setSelected(true);
+            }
+            return;
+        }
+        browserPro.setVisible(true);
+        rightShowerHider.showDefaultNode();
+        if (settingsMenuItem != null) {
+            settingsMenuItem.setSelected(false);
+        }
+        if (toggleConfigButton != null) {
+            toggleConfigButton.setSelected(false);
         }
     }
 
@@ -3224,6 +3376,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         if (toggleCopilotButton != null && toggleCopilotButton.isSelected()) {
             if (toggleConfigButton != null) {
                 toggleConfigButton.setSelected(false);
+            }
+            if (settingsMenuItem != null) {
+                settingsMenuItem.setSelected(false);
             }
             rightShowerHider.showDefaultNode();
             dockCopilot(copilotDock);
@@ -3316,7 +3471,28 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             updateWindowTitle(path);
             updateWorkdirBreadcrumb(path);
         });
+        installAppMenuIcon();
         applyChromeSurfaces();
+        dockCopilot(CopilotDock.WORKDIR_PEEK);
+    }
+
+    private void installAppMenuIcon() {
+        if (appMenuButton == null) {
+            return;
+        }
+        try (InputStream logoStream = AppStarter.class.getResourceAsStream("/logo.png")) {
+            if (logoStream == null) {
+                return;
+            }
+            ImageView view = new ImageView(new Image(logoStream));
+            view.setFitWidth(18);
+            view.setFitHeight(18);
+            view.setPreserveRatio(true);
+            view.setSmooth(true);
+            appMenuButton.setGraphic(view);
+        } catch (Exception e) {
+            logger.warn("Could not load AsciidocFX menu icon", e);
+        }
     }
 
     @FXML
@@ -3432,7 +3608,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 ? null
                 : editorConfigBean.getFontFamily().get(0);
         ChromeContrast.apply(root, dark, editorConfigBean.getOutlineContrast(),
-                editorConfigBean.getBackgroundContrast(), fontFamily);
+                editorConfigBean.getBackgroundContrast(), editorConfigBean.getChromeContrast(),
+                editorConfigBean.getChromeOverlay(), fontFamily);
     }
 
     private void applyTabChrome(MyTab tab) {
@@ -3457,13 +3634,16 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         if (documentNavTabs == null || documentSplitPane == null) {
             return;
         }
-        documentNavTabs.setVisible(visible);
-        documentNavTabs.setManaged(visible);
+        documentNavTabs.setVisible(true);
+        documentNavTabs.setManaged(true);
+        documentNavTabs.setMinWidth(0);
         if (visible) {
-            documentNavTabs.setMinWidth(190);
-            documentSplitPane.setDividerPosition(0, editorConfigBean.getDocumentNavSplitter());
+            double position = editorConfigBean.getDocumentNavSplitter();
+            if (position < 0.08) {
+                position = 0.22;
+            }
+            documentSplitPane.setDividerPosition(0, position);
         } else {
-            documentNavTabs.setMinWidth(0);
             documentSplitPane.setDividerPosition(0, 0);
         }
     }
@@ -3474,7 +3654,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     public void dockCopilot(CopilotDock dock) {
         if (dock == null) {
-            dock = CopilotDock.RIGHT_OF_PREVIEW;
+            dock = CopilotDock.WORKDIR_PEEK;
         }
         this.copilotDock = dock;
         undockCopilotKeepToggle();
@@ -3482,6 +3662,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             toggleCopilotButton.setSelected(true);
         }
         switch (dock) {
+            case WORKDIR_PEEK -> installCopilotPeek();
             case LEFT_OF_DOCUMENT -> {
                 copilotPanel.setMinWidth(240);
                 copilotPanel.setMinHeight(0);
@@ -3520,6 +3701,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 Scene floatScene = copilotPanel.getScene();
                 if (floatScene == null || floatScene.getRoot() != copilotPanel) {
                     copilotFloatStage.setScene(new Scene(copilotPanel, 420, 640));
+                    applyCurrentTheme(copilotFloatStage);
                 }
                 copilotFloatStage.show();
                 copilotFloatStage.toFront();
@@ -3540,6 +3722,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             return;
         }
         copilotDropOverlay.showZones();
+        copilotDropOverlay.toFront();
         if (copilotDragMove == null) {
             copilotDragMove = event -> copilotDropOverlay.hoverAtScreen(event.getScreenX(), event.getScreenY());
             copilotDragRelease = event -> {
@@ -3586,7 +3769,27 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         restoreMainDividers();
     }
 
+    private void installCopilotPeek() {
+        if (workspaceFrame == null || copilotPeekSlot == null || copilotPanel == null) {
+            return;
+        }
+        showFilesPane(true);
+        if (copilotPeekHost == null) {
+            copilotPeekHost = new CopilotPeekHost(copilotPanel, copilotPeekSlot, workspaceFrame);
+            workspaceFrame.getChildren().add(copilotPeekHost);
+        }
+        copilotPanel.setMinHeight(0);
+        copilotPeekHost.attachPanel();
+        copilotPeekHost.setVisible(filesPaneVisible());
+        if (copilotDropOverlay != null) {
+            copilotDropOverlay.toFront();
+        }
+    }
+
     private void undockCopilotKeepToggle() {
+        if (copilotPeekHost != null && copilotPeekHost.hostsPanel()) {
+            copilotPeekHost.detachPanel();
+        }
         splitPane.getItems().remove(copilotPanel);
         mainVerticalSplitPane.getItems().remove(copilotPanel);
         if (copilotFloatStage != null) {
@@ -3766,11 +3969,12 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 boolean dark = "Dark".equalsIgnoreCase(theme.getThemeName());
                 for (Stage stage : stages) {
                     if (nonNull(stage) && nonNull(stage.getScene())) {
-                        ObservableList<String> stylesheets = stage.getScene().getStylesheets();
+                        Scene stageScene = stage.getScene();
+                        ObservableList<String> stylesheets = stageScene.getStylesheets();
                         stylesheets.clear();
                         stylesheets.add(themeUri);
-                        applyChromeSurfaces(stage.getScene().getRoot());
-                        NativeTitleBarTheme.apply(stage.getScene(), dark);
+                        applyChromeSurfaces(stageScene.getRoot());
+                        NativeTitleBarTheme.apply(stageScene, dark);
                     }
                 }
 

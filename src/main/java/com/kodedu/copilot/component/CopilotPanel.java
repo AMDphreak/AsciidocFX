@@ -110,6 +110,7 @@ public class CopilotPanel extends VBox {
         dockButton.setTooltip(new Tooltip("Move Copilot"));
         dockButton.getStyleClass().add("copilot-auth-button");
         dockButton.getItems().addAll(
+                dockItem("Files pane (peek)", CopilotDock.WORKDIR_PEEK),
                 dockItem("Right of preview", CopilotDock.RIGHT_OF_PREVIEW),
                 dockItem("Left of editor", CopilotDock.LEFT_OF_DOCUMENT),
                 dockItem("Top of workspace", CopilotDock.TOP_OF_WORKSPACE),

@@ -12,6 +12,10 @@
     -chrome-frame-border: #c8c9cc;
     -chrome-button-border: #d0d1d4;
     -chrome-icon: #3a3a3a;
+    -chrome-text: #2a2a2a;
+    -chrome-tab-bg: #e6e6e8;
+    -chrome-menu-bg: #f4f4f4;
+    -chrome-status-bg: #e4e5e7;
 }
 
 .workspace-frame {
@@ -155,4 +159,15 @@
     -fx-border-color: rgb(200, 200, 200);
     -fx-font-size: 11px;
 }
+
+.output-button.browser,
+.output-button.browser * {
+    -fx-text-fill: #3d6b1f;
+    -fx-icon-color: -fx-text-fill;
+}
+
+.output-button.browser:hover,
+.output-button.browser *:hover {
+    -fx-text-fill: #2a4e14;
+    -fx-icon-color: -fx-text-fill;
 }

@@ -6,7 +6,9 @@ import com.kodedu.helper.IOHelper;
 import com.kodedu.service.ThreadService;
 import jakarta.json.*;
 import javafx.animation.FadeTransition;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -45,6 +47,24 @@ public abstract class ConfigurationBase {
     protected final ThreadService threadService;
 
     public abstract String formName();
+
+    private final BooleanProperty dirty = new SimpleBooleanProperty(false);
+
+    public boolean isDirty() {
+        return dirty.get();
+    }
+
+    public BooleanProperty dirtyProperty() {
+        return dirty;
+    }
+
+    public void markDirty() {
+        dirty.set(true);
+    }
+
+    public void markClean() {
+        dirty.set(false);
+    }
 
     @Value("${application.config.folder}")
     private String userHomeConfigFolder;

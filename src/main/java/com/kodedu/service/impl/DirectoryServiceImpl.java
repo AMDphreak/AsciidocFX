@@ -3,6 +3,7 @@ package com.kodedu.service.impl;
 import com.kodedu.config.StoredConfigBean;
 import com.kodedu.controller.ApplicationController;
 import com.kodedu.helper.IOHelper;
+import com.kodedu.helper.OSHelper;
 import com.kodedu.other.Current;
 import com.kodedu.service.DirectoryService;
 import com.kodedu.service.EventService;
@@ -11,11 +12,14 @@ import com.kodedu.service.ThreadService;
 import javafx.application.Platform;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Window;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -24,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -132,10 +137,9 @@ public class DirectoryServiceImpl implements DirectoryService {
             return completableFuture.join();
         }
 
-        final DirectoryChooser directoryChooser = newDirectoryChooser("Select working directory");
-        final File file = directoryChooser.showDialog(null);
+        final File file = pickDirectory();
 
-        workingDirectory = Optional.ofNullable(file.toPath());
+        workingDirectory = Optional.ofNullable(file).map(File::toPath);
         eventService.sendEvent(DirectoryService.WORKING_DIRECTORY_UPDATE_EVENT, workingDirectory.orElse(null));
 
         return workingDirectory.orElse(null);
@@ -178,10 +182,49 @@ public class DirectoryServiceImpl implements DirectoryService {
 
     @Override
     public void askWorkingDir() {
-        DirectoryChooser directoryChooser = this.newDirectoryChooser("Select Working Directory");
-        File selectedDir = directoryChooser.showDialog(null);
+        File selectedDir = pickDirectory();
         if (Objects.nonNull(selectedDir)) {
             changeWorkigDir(selectedDir.toPath());
+        }
+    }
+
+    private File pickDirectory() {
+        Window owner = dialogOwner();
+        if (!OSHelper.isWindows()) {
+            DirectoryChooser directoryChooser = this.newDirectoryChooser("Select Working Directory");
+            return directoryChooser.showDialog(owner);
+        }
+        // JavaFX DirectoryChooser is unreliable on Windows (null owner, COM picker).
+        final AtomicReference<File> chosen = new AtomicReference<>();
+        try {
+            Runnable picker = () -> {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setDialogTitle("Select Working Directory");
+                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                chooser.setAcceptAllFileFilterUsed(false);
+                initialDirectory.ifPresent(file -> chooser.setCurrentDirectory(getChooserInitialDirectory(file)));
+                if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    chosen.set(chooser.getSelectedFile());
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                picker.run();
+            } else {
+                SwingUtilities.invokeAndWait(picker);
+            }
+        } catch (Exception e) {
+            logger.error("Working directory picker failed, falling back to JavaFX DirectoryChooser", e);
+            DirectoryChooser directoryChooser = this.newDirectoryChooser("Select Working Directory");
+            return directoryChooser.showDialog(owner);
+        }
+        return chosen.get();
+    }
+
+    private Window dialogOwner() {
+        try {
+            return controller.getStage();
+        } catch (Exception e) {
+            return null;
         }
     }
 

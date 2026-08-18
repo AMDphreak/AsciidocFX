@@ -36,6 +36,10 @@ public class WorkspaceIndexStage {
         this.themeApplier = themeApplier;
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     public void show(Window owner) {
         if (stage == null) {
             build(owner);

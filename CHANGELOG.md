@@ -13,6 +13,14 @@ All notable changes are documented in this file.
 * App links move to a top-bar menu; version is in the native window title; workspaces persist in a Sticky Notes-style index
 * Quieter top bar; live outline and background contrast sliders on the left of the chrome
 * Document preview theme follows the app theme on app-theme change; the document moon/sun control stays an override until the next app-theme change
+* Contrast cluster: overlay swatch, one contrast glyph, three stacked sliders (borders; pane fills; tabs/menus/status/control text). Default 0.8 on a 0.4–1.4 range
+* Workspaces, Files, then Open on the left; Copilot lives as a clipped peek at the bottom of the files pane and expands as a resizable overlay
+* Open asks Folder vs File; folders use a Windows-safe directory picker and populate the tree; files open in tabs and set workdir to the parent when none is set
+* View: Side | Full and document preview theme sit on the view pane; app theme stays on the top bar; Settings is in the AsciidocFX app-icon menu
+* Browser label uses a readable green on the light theme
+* Outline/Forensics stay populated when collapsed — only the divider goes to zero, like the Files pane
+* The forensic link table is Forensics (not References): groups are Internal References and Xrefs; the id column is Link
+* Settings uses Outline-style category tabs with icons, pinned Save / Save all / Load, and an optional pop-out window
 * Native OS title bar follows app Dark/Light theme on Windows (DWM today; `Scene.Preferences.colorScheme` when JavaFX ships JDK-8362091)
 
 ## [Version ~1.8.11](https://github.com/asciidocfx/AsciidocFX/releases/tag/v1.8.11) (10.2025)

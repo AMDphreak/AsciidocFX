@@ -4,6 +4,7 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import org.kordamp.ikonli.javafx.*?>
 <AnchorPane id="AnchorPane" fx:id="rootAnchor" styleClass="root-container"
@@ -231,11 +232,13 @@
                                                 </Label>
                                             </children>
                                         </StackPane>
+                                        <Region fx:id="copilotPeekSlot" maxHeight="136" minHeight="136"
+                                                prefHeight="136" styleClass="copilot-peek-slot"/>
                                     </children>
                                 </VBox>
                                 <SplitPane fx:id="documentSplitPane" dividerPositions="0.34" minWidth="0" styleClass="pane-editor">
                                     <items>
-                                        <TabPane fx:id="documentNavTabs" minWidth="190" tabClosingPolicy="UNAVAILABLE"
+                                        <TabPane fx:id="documentNavTabs" minWidth="0" tabClosingPolicy="UNAVAILABLE"
                                                  styleClass="document-nav-tabs">
                                             <tabs>
                                                 <Tab closable="false" text="Outline">
@@ -243,7 +246,7 @@
                                                         <TreeView fx:id="outlineTreeView"/>
                                                     </content>
                                                 </Tab>
-                                                <Tab closable="false" text="References">
+                                                <Tab closable="false" text="Forensics">
                                                     <content>
                                                         <TreeTableView fx:id="refTreeTableView" showRoot="false"/>
                                                     </content>
@@ -286,6 +289,30 @@
                                     <children>
                                         <HBox styleClass="menu-hbox, convert-box, nested-toolbar">
                                             <children>
+                                                <HBox alignment="CENTER_LEFT" spacing="0" styleClass="preview-mode-control">
+                                                    <children>
+                                                        <Label styleClass="preview-mode-label" text="View:"/>
+                                                        <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
+                                                                      onAction="#togglePreviewView" selected="true"
+                                                                      styleClass="chrome-button,mode-segment,mode-segment-first" text="Side">
+                                                            <toggleGroup>
+                                                                <ToggleGroup fx:id="rightToggleGroup"/>
+                                                            </toggleGroup>
+                                                            <tooltip>
+                                                                <Tooltip text="Editor and preview side by side"/>
+                                                            </tooltip>
+                                                        </ToggleButton>
+                                                        <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
+                                                                      onAction="#toggleZenMode"
+                                                                      styleClass="chrome-button,mode-segment,mode-segment-last"
+                                                                      text="Full"
+                                                                      toggleGroup="$rightToggleGroup">
+                                                            <tooltip>
+                                                                <Tooltip text="Preview only"/>
+                                                            </tooltip>
+                                                        </ToggleButton>
+                                                    </children>
+                                                </HBox>
                                                 <FlowPane hgap="10" prefWidth="-1.0" vgap="5">
                                                     <children>
                                                         <ProgressIndicator fx:id="indikator" managed="false"
@@ -327,6 +354,19 @@
                                                         <Insets/>
                                                     </HBox.margin>
                                                 </Pane>
+                                                <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
+                                                              contentDisplay="GRAPHIC_ONLY"
+                                                              focusTraversable="false"
+                                                              minHeight="26.0" minWidth="28.0"
+                                                              mnemonicParsing="false" text=""
+                                                              styleClass="chrome-button,preview-theme-toggle">
+                                                    <graphic>
+                                                        <FontIcon iconLiteral="fa-moon-o"/>
+                                                    </graphic>
+                                                    <tooltip>
+                                                        <Tooltip text="Dark or light document preview. Browser stays light unless you choose Open dark."/>
+                                                    </tooltip>
+                                                </ToggleButton>
                                             </children>
                                             <padding>
                                                 <Insets bottom="5.0" left="15.0" right="15.0" top="5.0"/>
@@ -403,34 +443,15 @@
                         <Insets bottom="6.0" left="8.0" right="8.0" top="6.0"/>
                     </padding>
                     <children>
-                        <HBox alignment="CENTER_LEFT" spacing="4" styleClass="contrast-control">
-                            <children>
-                                <Label contentDisplay="GRAPHIC_ONLY">
-                                    <graphic>
-                                        <FontIcon iconLiteral="fa-square-o"/>
-                                    </graphic>
-                                    <tooltip>
-                                        <Tooltip text="Outline contrast"/>
-                                    </tooltip>
-                                </Label>
-                                <Slider fx:id="outlineContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
-                                        max="1.2" min="0.8" prefWidth="72" value="1.0"/>
-                            </children>
-                        </HBox>
-                        <HBox alignment="CENTER_LEFT" spacing="4" styleClass="contrast-control">
-                            <children>
-                                <Label contentDisplay="GRAPHIC_ONLY">
-                                    <graphic>
-                                        <FontIcon iconLiteral="fa-stop"/>
-                                    </graphic>
-                                    <tooltip>
-                                        <Tooltip text="Background contrast"/>
-                                    </tooltip>
-                                </Label>
-                                <Slider fx:id="backgroundContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
-                                        max="1.2" min="0.8" prefWidth="72" value="1.0"/>
-                            </children>
-                        </HBox>
+                        <Button fx:id="workspaceIndexButton" mnemonicParsing="false" onAction="#showWorkspaceIndex"
+                                styleClass="chrome-button" text="Workspaces">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-th-large"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Open the workspace index"/>
+                            </tooltip>
+                        </Button>
                         <ToggleButton fx:id="filesToggle" mnemonicParsing="false" onAction="#toggleFilesView"
                                       selected="true" styleClass="chrome-button" text="Files">
                             <graphic>
@@ -446,27 +467,49 @@
                                 <FontIcon iconLiteral="fa-folder-open-o"/>
                             </graphic>
                             <tooltip>
-                                <Tooltip text="Open a working directory"/>
+                                <Tooltip text="Open a folder as the working directory, or open files"/>
                             </tooltip>
                         </Button>
-                        <Button fx:id="workspaceIndexButton" mnemonicParsing="false" onAction="#showWorkspaceIndex"
-                                styleClass="chrome-button" text="Workspaces">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-th-large"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Open the workspace index"/>
-                            </tooltip>
-                        </Button>
-                        <ToggleButton fx:id="toggleCopilotButton" mnemonicParsing="false" onAction="#toggleCopilotView"
-                                      styleClass="chrome-button" text="Copilot">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-commenting"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Copilot (workspace chat — drag the panel header to dock)"/>
-                            </tooltip>
-                        </ToggleButton>
+                        <HBox alignment="CENTER_LEFT" spacing="6" styleClass="contrast-cluster">
+                            <children>
+                                <ColorPicker fx:id="chromeOverlayColorPicker"
+                                             styleClass="chrome-swatch">
+                                    <tooltip>
+                                        <Tooltip text="Chrome overlay color"/>
+                                    </tooltip>
+                                </ColorPicker>
+                                <Label contentDisplay="GRAPHIC_ONLY" styleClass="contrast-glyph">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fa-adjust"/>
+                                    </graphic>
+                                    <tooltip>
+                                        <Tooltip text="Chrome contrast. Top: borders. Middle: pane fills. Bottom: tabs, menus, status, and control text."/>
+                                    </tooltip>
+                                </Label>
+                                <VBox alignment="CENTER_LEFT" spacing="0" styleClass="contrast-sliders">
+                                    <children>
+                                        <Slider fx:id="outlineContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
+                                                max="1.4" min="0.4" prefWidth="88" value="0.8">
+                                            <tooltip>
+                                                <Tooltip text="Border and outline contrast"/>
+                                            </tooltip>
+                                        </Slider>
+                                        <Slider fx:id="backgroundContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
+                                                max="1.4" min="0.4" prefWidth="88" value="0.8">
+                                            <tooltip>
+                                                <Tooltip text="Editor, preview, files, and top-bar fill contrast"/>
+                                            </tooltip>
+                                        </Slider>
+                                        <Slider fx:id="chromeContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
+                                                max="1.4" min="0.4" prefWidth="88" value="0.8">
+                                            <tooltip>
+                                                <Tooltip text="Tab, menu, status, and control-text contrast"/>
+                                            </tooltip>
+                                        </Slider>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
                         <Pane HBox.hgrow="ALWAYS"/>
                         <MenuButton fx:id="exportMenu" mnemonicParsing="false"
                                     styleClass="chrome-button,export-menu" text="Export">
@@ -474,43 +517,6 @@
                                 <FontIcon iconLiteral="fa-download"/>
                             </graphic>
                         </MenuButton>
-                        <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
-                                      contentDisplay="GRAPHIC_ONLY"
-                                      focusTraversable="false"
-                                      minHeight="26.0" minWidth="28.0"
-                                      mnemonicParsing="false" text=""
-                                      styleClass="chrome-button,preview-theme-toggle">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-moon-o"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Dark or light document preview. Browser stays light unless you choose Open dark."/>
-                            </tooltip>
-                        </ToggleButton>
-                        <HBox alignment="CENTER_LEFT" spacing="0" styleClass="preview-mode-control">
-                            <children>
-                                <Label styleClass="preview-mode-label" text="Preview:"/>
-                                <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
-                                              onAction="#togglePreviewView" selected="true"
-                                              styleClass="chrome-button,mode-segment,mode-segment-first" text="Side">
-                                    <toggleGroup>
-                                        <ToggleGroup fx:id="rightToggleGroup"/>
-                                    </toggleGroup>
-                                    <tooltip>
-                                        <Tooltip text="Editor and preview side by side"/>
-                                    </tooltip>
-                                </ToggleButton>
-                                <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
-                                              onAction="#toggleZenMode"
-                                              styleClass="chrome-button,mode-segment,mode-segment-last"
-                                              text="Full"
-                                              toggleGroup="$rightToggleGroup">
-                                    <tooltip>
-                                        <Tooltip text="Preview only"/>
-                                    </tooltip>
-                                </ToggleButton>
-                            </children>
-                        </HBox>
                         <Label fx:id="browserPro" alignment="CENTER" contentDisplay="RIGHT"
                                minWidth="-Infinity"
                                styleClass="output-button,browser,chrome-button" text="Browser"
@@ -533,20 +539,15 @@
                                 <Tooltip text="Dark or light application theme"/>
                             </tooltip>
                         </ToggleButton>
-                        <ToggleButton fx:id="toggleConfigButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-                                      onAction="#toggleConfigurationView" styleClass="chrome-button">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-cog"/>
-                            </graphic>
+                        <MenuButton fx:id="appMenuButton" mnemonicParsing="false"
+                                    styleClass="chrome-button,app-menu-button" text="">
                             <tooltip>
-                                <Tooltip text="Settings"/>
+                                <Tooltip text="AsciidocFX"/>
                             </tooltip>
-                        </ToggleButton>
-                        <MenuButton fx:id="appMenuButton" mnemonicParsing="false" styleClass="chrome-button" text="">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-ellipsis-h"/>
-                            </graphic>
                             <items>
+                                <CheckMenuItem fx:id="settingsMenuItem" mnemonicParsing="false"
+                                               onAction="#toggleConfigurationView" text="Settings"/>
+                                <SeparatorMenuItem/>
                                 <MenuItem mnemonicParsing="false" onAction="#bugReport" text="Bug Report"/>
                                 <MenuItem mnemonicParsing="false" onAction="#openCommunityForum"
                                           text="Community Forum"/>

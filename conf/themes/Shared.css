@@ -29,6 +29,10 @@
     -chrome-frame-border: derive(-fx-text-base-color, 55%);
     -chrome-button-border: derive(-fx-text-base-color, 35%);
     -chrome-icon: -fx-text-base-color;
+    -chrome-text: -fx-text-base-color;
+    -chrome-tab-bg: derive(-fx-background, 6%);
+    -chrome-menu-bg: derive(-fx-background, 12%);
+    -chrome-status-bg: derive(-fx-background, 2%);
 }
 
 .root .ikonli-font-icon {
@@ -47,7 +51,11 @@
 }
 
 .tab-header-background, .tab-header-area {
-    -fx-background-color: -fx-background;
+    -fx-background-color: -chrome-tab-bg;
+}
+
+.context-menu, .menu-button .context-menu {
+    -fx-background-color: -chrome-menu-bg;
 }
 
 .root-container,
@@ -393,8 +401,14 @@
 
 .nested-toolbar .chrome-button .ikonli-font-icon,
 .top-chrome .ikonli-font-icon,
-.contrast-control .ikonli-font-icon {
+.contrast-control .ikonli-font-icon,
+.contrast-cluster .ikonli-font-icon {
     -fx-icon-color: -chrome-icon;
+}
+
+.top-chrome .chrome-button,
+.nested-toolbar .chrome-button {
+    -fx-text-fill: -chrome-text;
 }
 
 .convert-box .preview-theme-toggle {
@@ -478,18 +492,61 @@
     -fx-background-color: transparent;
 }
 
-.contrast-control {
+.contrast-control,
+.contrast-cluster {
     -fx-alignment: CENTER_LEFT;
     -fx-padding: 0 4 0 0;
 }
 
-.contrast-control .slider {
-    -fx-pref-width: 72;
-    -fx-min-width: 64;
+.contrast-sliders {
+    -fx-spacing: 0;
+    -fx-alignment: CENTER_LEFT;
 }
 
+.contrast-cluster .slider,
+.contrast-control .slider {
+    -fx-pref-width: 88;
+    -fx-min-width: 72;
+    -fx-pref-height: 14;
+    -fx-max-height: 16;
+}
+
+.contrast-cluster .slider .track,
 .contrast-control .slider .track {
     -fx-pref-height: 3;
+}
+
+.chrome-swatch {
+    -fx-color-label-visible: false;
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-max-width: 32;
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-padding: 2;
+}
+
+.app-menu-button {
+    -fx-padding: 3 8;
+}
+
+.copilot-peek-slot {
+    -fx-min-height: 136;
+    -fx-pref-height: 136;
+    -fx-max-height: 136;
+}
+
+.copilot-peek-host {
+    -fx-background-color: -chrome-workdir-bg;
+    -fx-border-color: -chrome-frame-border;
+    -fx-border-width: 1 0 0 0;
+}
+
+.copilot-peek-host.expanded {
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 14, 0.18, 2, 2);
 }
 
 .workdir-breadcrumb {
@@ -518,7 +575,32 @@
 }
 
 .document-nav-tabs {
-    -fx-min-width: 190;
+    -fx-min-width: 0;
+}
+
+.settings-shell {
+    -fx-spacing: 0;
+}
+
+.settings-header {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.settings-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.settings-footer {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.settings-tabs .tab .ikonli-font-icon {
+    -fx-font-size: 1.1em;
+}
+
+.settings-pop-out {
+    -fx-padding: 2 8;
 }
 
 .export-menu .output-button.pdf,
