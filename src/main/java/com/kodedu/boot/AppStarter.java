@@ -4,6 +4,7 @@ import com.install4j.api.launcher.StartupNotification;
 import com.kodedu.config.ConfigurationService;
 import com.kodedu.config.EditorConfigBean;
 import com.kodedu.controller.ApplicationController;
+import com.kodedu.component.NativeTitleBarTheme;
 import com.kodedu.component.WindowPlacement;
 import com.kodedu.helper.IOHelper;
 import com.kodedu.helper.TaskbarHelper;
@@ -212,8 +213,8 @@ public class AppStarter extends Application {
                     .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
                     .orElse(true);
             scene.setFill(WindowPlacement.defaultSceneFill(dark));
-
             stage.setScene(scene);
+            NativeTitleBarTheme.apply(stage, dark);
             controller.applyInitialConfigurations();
             if (!isHeadless()) {
                 WindowPlacement.apply(stage,

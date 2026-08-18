@@ -13,6 +13,7 @@ All notable changes are documented in this file.
 * App links move to a top-bar menu; version is in the native window title; workspaces persist in a Sticky Notes-style index
 * Quieter top bar; live outline and background contrast sliders on the left of the chrome
 * Document preview theme follows the app theme on app-theme change; the document moon/sun control stays an override until the next app-theme change
+* Native OS title bar follows app Dark/Light theme on Windows (DWM today; `Scene.Preferences.colorScheme` when JavaFX ships JDK-8362091)
 
 ## [Version ~1.8.11](https://github.com/asciidocfx/AsciidocFX/releases/tag/v1.8.11) (10.2025)
 

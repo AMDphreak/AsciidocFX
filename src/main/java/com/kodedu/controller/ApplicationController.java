@@ -3763,12 +3763,14 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 String aceTheme = theme.getAceTheme();
 //                editorConfigBean.updateAceTheme(aceTheme);
 
+                boolean dark = "Dark".equalsIgnoreCase(theme.getThemeName());
                 for (Stage stage : stages) {
                     if (nonNull(stage) && nonNull(stage.getScene())) {
                         ObservableList<String> stylesheets = stage.getScene().getStylesheets();
                         stylesheets.clear();
                         stylesheets.add(themeUri);
                         applyChromeSurfaces(stage.getScene().getRoot());
+                        NativeTitleBarTheme.apply(stage.getScene(), dark);
                     }
                 }
 
@@ -3807,6 +3809,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                                             .getBytes(StandardCharsets.UTF_8)));
                         }
                         applyChromeSurfaces(stageScene.getRoot());
+                        NativeTitleBarTheme.apply(stageScene, dark);
 
                     }
                 }
