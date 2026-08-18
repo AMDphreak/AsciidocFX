@@ -4,6 +4,7 @@ All notable changes are documented in this file.
 
 ## Unreleased
 
+* Default spell check follows the OS locale instead of the first reverse-sorted dictionary (Turkish)
 * Replace rotated side rails with a top chrome bar, per-tab Outline/References, Export menu, Open in Browser, and a dockable Copilot pane to the right of preview
 * Copilot can be dragged onto drop zones; Preview/Preview Only stays on the preview pane; app vs document dark-mode are separate toggles
 
