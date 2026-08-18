@@ -20,6 +20,15 @@
 .root {
     -fx-font-size: 10px;
     -fx-font-family: 'Arial' ,'Verdana', 'Calibri';
+    -chrome-frame-bg: derive(-fx-background, 4%);
+    -chrome-editor-bg: derive(-fx-background, 10%);
+    -chrome-preview-bg: derive(-fx-background, 18%);
+    -chrome-workdir-bg: derive(-fx-background, 8%);
+    -chrome-top-bg: derive(-fx-background, 2%);
+    -chrome-button-bg: derive(-fx-base, 6%);
+    -chrome-frame-border: derive(-fx-text-base-color, 55%);
+    -chrome-button-border: derive(-fx-text-base-color, 35%);
+    -chrome-icon: -fx-text-base-color;
 }
 
 .root .ikonli-font-icon {
@@ -29,7 +38,7 @@
 
 .split-pane .split-pane-divider {
     -fx-padding: 0 1 0 1;
-    -fx-background-color: transparent;
+    -fx-background-color: -chrome-frame-border;
 }
 
 .tab-pane {
@@ -323,7 +332,7 @@
 
 .top-chrome {
     -fx-alignment: CENTER_LEFT;
-    -fx-background-color: transparent;
+    -fx-background-color: -chrome-top-bg;
 }
 
 .workspace-stack {
@@ -331,33 +340,33 @@
 }
 
 .workspace-frame {
-    -fx-background-color: derive(-fx-background, 4%);
+    -fx-background-color: -chrome-frame-bg;
     -fx-background-radius: 12;
     -fx-border-radius: 12;
-    -fx-border-color: derive(-fx-text-base-color, 55%);
+    -fx-border-color: -chrome-frame-border;
     -fx-border-width: 1;
     -fx-padding: 4;
 }
 
 .pane-editor {
-    -fx-background-color: derive(-fx-background, 10%);
+    -fx-background-color: -chrome-editor-bg;
     -fx-background-radius: 8;
 }
 
 .pane-preview {
-    -fx-background-color: derive(-fx-background, 18%);
+    -fx-background-color: -chrome-preview-bg;
     -fx-background-radius: 8;
 }
 
 .pane-workdir {
-    -fx-background-color: derive(-fx-background, 8%);
+    -fx-background-color: -chrome-workdir-bg;
     -fx-background-radius: 8;
 }
 
 .chrome-button {
     -fx-background-radius: 6;
     -fx-border-radius: 6;
-    -fx-border-color: derive(-fx-text-base-color, 40%);
+    -fx-border-color: -chrome-button-border;
     -fx-border-width: 1;
     -fx-padding: 4 10;
     -fx-cursor: hand;
@@ -366,9 +375,10 @@
 
 .top-chrome .chrome-button.toggle-button,
 .top-chrome .chrome-button.button,
-.top-chrome .chrome-button.menu-button {
-    -fx-background-color: derive(-fx-base, 8%);
-    -fx-border-color: derive(-fx-text-base-color, 25%);
+.top-chrome .chrome-button.menu-button,
+.top-chrome .chrome-button {
+    -fx-background-color: -chrome-button-bg;
+    -fx-border-color: -chrome-button-border;
     -fx-border-width: 1;
 }
 
@@ -381,8 +391,10 @@
     -fx-text-fill: derive(-fx-text-base-color, 15%);
 }
 
-.nested-toolbar .chrome-button .ikonli-font-icon {
-    -fx-icon-color: derive(-fx-text-base-color, 20%);
+.nested-toolbar .chrome-button .ikonli-font-icon,
+.top-chrome .ikonli-font-icon,
+.contrast-control .ikonli-font-icon {
+    -fx-icon-color: -chrome-icon;
 }
 
 .convert-box .preview-theme-toggle {
@@ -433,7 +445,72 @@
 }
 
 .mode-segment {
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+
+.preview-mode-control {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 0;
+    -fx-padding: 0 2 0 8;
+    -fx-background-color: -chrome-button-bg;
     -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-border-color: -chrome-button-border;
+    -fx-border-width: 1;
+}
+
+.preview-mode-label {
+    -fx-padding: 0 8 0 4;
+}
+
+.preview-mode-control .mode-segment-first {
+    -fx-background-radius: 4 0 0 4;
+}
+
+.preview-mode-control .mode-segment-last {
+    -fx-background-radius: 0 4 4 0;
+}
+
+.preview-mode-control .chrome-button {
+    -fx-border-width: 0;
+    -fx-background-color: transparent;
+}
+
+.contrast-control {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 4 0 0;
+}
+
+.contrast-control .slider {
+    -fx-pref-width: 72;
+    -fx-min-width: 64;
+}
+
+.contrast-control .slider .track {
+    -fx-pref-height: 3;
+}
+
+.workdir-breadcrumb {
+    -fx-padding: 0 8 6 8;
+}
+
+.breadcrumb-segment {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 1 4;
+    -fx-cursor: hand;
+}
+
+.breadcrumb-segment:hover {
+    -fx-underline: true;
+    -fx-background-color: derive(-fx-base, 10%);
+}
+
+.breadcrumb-sep {
+    -fx-opacity: 0.45;
+    -fx-padding: 1 0;
 }
 
 .document-chrome {
@@ -441,7 +518,7 @@
 }
 
 .document-nav-tabs {
-    -fx-min-width: 0;
+    -fx-min-width: 190;
 }
 
 .export-menu .output-button.pdf,

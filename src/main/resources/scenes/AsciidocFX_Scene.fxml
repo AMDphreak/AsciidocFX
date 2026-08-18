@@ -79,64 +79,45 @@
                                     <children>
                                         <FlowPane hgap="5" vgap="5" styleClass="nested-toolbar,workdir-toolbar">
                                             <children>
-                                                <Button fx:id="changeWorkingDir" minWidth="-Infinity"
-                                                        mnemonicParsing="false" onAction="#changeWorkingDir" text=""
-                                                        HBox.hgrow="NEVER">
+                                                <ToggleButton fx:id="workdirToggle" mnemonicParsing="false"
+                                                              onAction="#toggleWorkdirView" selected="true"
+                                                              styleClass="chrome-button" text="Workdir">
+                                                    <toggleGroup>
+                                                        <ToggleGroup fx:id="leftToggleGroup"/>
+                                                    </toggleGroup>
                                                     <graphic>
-                                                        <Label fx:id="workingDirButton" minWidth="-Infinity"
-                                                               mnemonicParsing="false" text="">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-folder-open-o"/>
-                                                            </graphic>
-                                                        </Label>
+                                                        <FontIcon iconLiteral="fa-folder-open-o"/>
                                                     </graphic>
                                                     <tooltip>
-                                                        <Tooltip text="Change Workdir"/>
+                                                        <Tooltip text="Working directory"/>
                                                     </tooltip>
-                                                </Button>
-                                                <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#goUp"
-                                                        text="">
+                                                </ToggleButton>
+                                                <ToggleButton fx:id="recentToggle" mnemonicParsing="false"
+                                                              onAction="#toggleRecentView"
+                                                              styleClass="chrome-button" text="Recent"
+                                                              toggleGroup="$leftToggleGroup">
                                                     <graphic>
-                                                        <Label fx:id="goUpLabel" text="">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-level-up"/>
-                                                            </graphic>
-                                                        </Label>
+                                                        <FontIcon iconLiteral="fa-clock-o"/>
                                                     </graphic>
                                                     <tooltip>
-                                                        <Tooltip text="Go Up"/>
+                                                        <Tooltip text="Recent files"/>
                                                     </tooltip>
-                                                </Button>
-                                                <Button minWidth="-Infinity" mnemonicParsing="false"
-                                                        onAction="#refreshWorkingDir" text="">
-                                                    <graphic>
-                                                        <Label fx:id="refreshLabel" text="">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-refresh"/>
-                                                            </graphic>
-                                                        </Label>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Refresh"/>
-                                                    </tooltip>
-                                                </Button>
+                                                </ToggleButton>
                                                 <MenuButton fx:id="leftButton" minWidth="-Infinity"
-                                                            mnemonicParsing="false" text="" HBox.hgrow="NEVER">
+                                                            mnemonicParsing="false" text="" HBox.hgrow="NEVER"
+                                                            styleClass="chrome-button">
                                                     <graphic>
                                                         <FontIcon iconLiteral="fa-ellipsis-h"/>
                                                     </graphic>
                                                     <items>
-                                                        <MenuItem mnemonicParsing="false" onAction="#bugReport"
-                                                                  text="Bug Report"/>
-                                                        <MenuItem mnemonicParsing="false" onAction="#openCommunityForum"
-                                                                  text="Community Forum"/>
-                                                        <MenuItem mnemonicParsing="false" onAction="#openGitterChat"
-                                                                  text="Gitter Chat"/>
-                                                        <SeparatorMenuItem/>
-                                                        <MenuItem mnemonicParsing="false" onAction="#openGithubPage"
-                                                                  text="Github Page"/>
-                                                        <MenuItem fx:id="afxVersionItem" disable="true"
-                                                                  mnemonicParsing="false" text=""/>
+                                                        <CheckMenuItem fx:id="workdirShowHiddenFiles"
+                                                                       mnemonicParsing="false"
+                                                                       onAction="#showHiddenFiles"
+                                                                       text="Show hidden files"/>
+                                                        <MenuItem fx:id="workdirNewFile" mnemonicParsing="false"
+                                                                  onAction="#createFile" text="New File"/>
+                                                        <MenuItem fx:id="workdirNewFolder" mnemonicParsing="false"
+                                                                  onAction="#createFolder" text="New Folder"/>
                                                     </items>
                                                     <HBox.margin>
                                                         <Insets/>
@@ -147,6 +128,8 @@
                                                 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
                                             </padding>
                                         </FlowPane>
+                                        <FlowPane fx:id="workdirBreadcrumb" hgap="2" vgap="2"
+                                                  styleClass="workdir-breadcrumb"/>
                                         <StackPane VBox.vgrow="ALWAYS">
                                             <children>
                                                 <ShowerHider fx:id="leftShowerHider" VBox.vgrow="ALWAYS">
@@ -157,8 +140,6 @@
                                                                     <items>
                                                                         <MenuItem fx:id="openFileTreeItem"
                                                                                   mnemonicParsing="false" text="Open"/>
-                                                                        <MenuItem onAction="#refreshFileView"
-                                                                                  mnemonicParsing="false" text="Refresh"/>
                                                                         <MenuItem id="openFolderTreeItem"
                                                                                   fx:id="browseFolderTreeItem"
                                                                                   mnemonicParsing="false"
@@ -252,9 +233,9 @@
                                         </StackPane>
                                     </children>
                                 </VBox>
-                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.22" minWidth="0" styleClass="pane-editor">
+                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.34" minWidth="0" styleClass="pane-editor">
                                     <items>
-                                        <TabPane fx:id="documentNavTabs" minWidth="0" tabClosingPolicy="UNAVAILABLE"
+                                        <TabPane fx:id="documentNavTabs" minWidth="190" tabClosingPolicy="UNAVAILABLE"
                                                  styleClass="document-nav-tabs">
                                             <tabs>
                                                 <Tab closable="false" text="Outline">
@@ -314,12 +295,6 @@
                                                                            prefHeight="20.0" prefWidth="20.0"
                                                                            progress="-1.0"
                                                                            visible="false"/>
-                                                        <MenuButton fx:id="exportMenu" mnemonicParsing="false"
-                                                                    styleClass="chrome-button,export-menu" text="Export">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-download"/>
-                                                            </graphic>
-                                                        </MenuButton>
                                                         <Label fx:id="htmlPro" managed="false" minWidth="-Infinity"
                                                                styleClass="output-button,html" visible="false" text="HTML">
                                                             <graphic>
@@ -352,41 +327,6 @@
                                                         <Insets/>
                                                     </HBox.margin>
                                                 </Pane>
-                                                <HBox alignment="CENTER_RIGHT" spacing="8">
-                                                <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
-                                                              onAction="#togglePreviewView" selected="true"
-                                                              styleClass="chrome-button,mode-segment" text="Preview">
-                                                    <toggleGroup>
-                                                        <ToggleGroup fx:id="rightToggleGroup"/>
-                                                    </toggleGroup>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
-                                                              onAction="#toggleZenMode"
-                                                              styleClass="chrome-button,mode-segment"
-                                                              text="Preview Only"
-                                                              toggleGroup="$rightToggleGroup"/>
-                                                <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
-                                                              contentDisplay="GRAPHIC_ONLY"
-                                                              focusTraversable="false"
-                                                              minHeight="26.0" minWidth="28.0"
-                                                              mnemonicParsing="false" text=""
-                                                              styleClass="chrome-button,preview-theme-toggle">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-moon-o"/>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Dark or light document preview. Browser stays light unless you choose Open dark."/>
-                                                    </tooltip>
-                                                </ToggleButton>
-                                                <Label fx:id="browserPro" alignment="CENTER" contentDisplay="RIGHT"
-                                                       minWidth="-Infinity"
-                                                       styleClass="output-button,browser,chrome-button" text="Open in Browser"
-                                                       textAlignment="LEFT">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-external-link"/>
-                                                    </graphic>
-                                                </Label>
-                                                </HBox>
                                             </children>
                                             <padding>
                                                 <Insets bottom="5.0" left="15.0" right="15.0" top="5.0"/>
@@ -463,27 +403,61 @@
                         <Insets bottom="6.0" left="8.0" right="8.0" top="6.0"/>
                     </padding>
                     <children>
-                        <ToggleButton fx:id="workdirToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-                                      onAction="#toggleWorkdirView" selected="true" styleClass="chrome-button">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="leftToggleGroup"/>
-                            </toggleGroup>
+                        <HBox alignment="CENTER_LEFT" spacing="4" styleClass="contrast-control">
+                            <children>
+                                <Label contentDisplay="GRAPHIC_ONLY">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fa-square-o"/>
+                                    </graphic>
+                                    <tooltip>
+                                        <Tooltip text="Outline contrast"/>
+                                    </tooltip>
+                                </Label>
+                                <Slider fx:id="outlineContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
+                                        max="1.2" min="0.8" prefWidth="72" value="1.0"/>
+                            </children>
+                        </HBox>
+                        <HBox alignment="CENTER_LEFT" spacing="4" styleClass="contrast-control">
+                            <children>
+                                <Label contentDisplay="GRAPHIC_ONLY">
+                                    <graphic>
+                                        <FontIcon iconLiteral="fa-stop"/>
+                                    </graphic>
+                                    <tooltip>
+                                        <Tooltip text="Background contrast"/>
+                                    </tooltip>
+                                </Label>
+                                <Slider fx:id="backgroundContrastSlider" blockIncrement="0.02" majorTickUnit="0.2"
+                                        max="1.2" min="0.8" prefWidth="72" value="1.0"/>
+                            </children>
+                        </HBox>
+                        <ToggleButton fx:id="filesToggle" mnemonicParsing="false" onAction="#toggleFilesView"
+                                      selected="true" styleClass="chrome-button" text="Files">
                             <graphic>
                                 <FontIcon iconLiteral="fa-folder-open-o"/>
                             </graphic>
                             <tooltip>
-                                <Tooltip text="Workdir"/>
+                                <Tooltip text="Show or hide the files pane"/>
                             </tooltip>
                         </ToggleButton>
-                        <ToggleButton fx:id="recentToggle" mnemonicParsing="false" onAction="#toggleRecentView"
-                                      styleClass="chrome-button" text="Recent" toggleGroup="$leftToggleGroup">
+                        <Button fx:id="changeWorkingDir" mnemonicParsing="false" onAction="#changeWorkingDir"
+                                styleClass="chrome-button" text="Open">
                             <graphic>
-                                <FontIcon iconLiteral="fa-clock-o"/>
+                                <FontIcon iconLiteral="fa-folder-open-o"/>
                             </graphic>
                             <tooltip>
-                                <Tooltip text="Recent files"/>
+                                <Tooltip text="Open a working directory"/>
                             </tooltip>
-                        </ToggleButton>
+                        </Button>
+                        <Button fx:id="workspaceIndexButton" mnemonicParsing="false" onAction="#showWorkspaceIndex"
+                                styleClass="chrome-button" text="Workspaces">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-th-large"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Open the workspace index"/>
+                            </tooltip>
+                        </Button>
                         <ToggleButton fx:id="toggleCopilotButton" mnemonicParsing="false" onAction="#toggleCopilotView"
                                       styleClass="chrome-button" text="Copilot">
                             <graphic>
@@ -494,6 +468,60 @@
                             </tooltip>
                         </ToggleButton>
                         <Pane HBox.hgrow="ALWAYS"/>
+                        <MenuButton fx:id="exportMenu" mnemonicParsing="false"
+                                    styleClass="chrome-button,export-menu" text="Export">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-download"/>
+                            </graphic>
+                        </MenuButton>
+                        <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
+                                      contentDisplay="GRAPHIC_ONLY"
+                                      focusTraversable="false"
+                                      minHeight="26.0" minWidth="28.0"
+                                      mnemonicParsing="false" text=""
+                                      styleClass="chrome-button,preview-theme-toggle">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-moon-o"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Dark or light document preview. Browser stays light unless you choose Open dark."/>
+                            </tooltip>
+                        </ToggleButton>
+                        <HBox alignment="CENTER_LEFT" spacing="0" styleClass="preview-mode-control">
+                            <children>
+                                <Label styleClass="preview-mode-label" text="Preview:"/>
+                                <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
+                                              onAction="#togglePreviewView" selected="true"
+                                              styleClass="chrome-button,mode-segment,mode-segment-first" text="Side">
+                                    <toggleGroup>
+                                        <ToggleGroup fx:id="rightToggleGroup"/>
+                                    </toggleGroup>
+                                    <tooltip>
+                                        <Tooltip text="Editor and preview side by side"/>
+                                    </tooltip>
+                                </ToggleButton>
+                                <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
+                                              onAction="#toggleZenMode"
+                                              styleClass="chrome-button,mode-segment,mode-segment-last"
+                                              text="Full"
+                                              toggleGroup="$rightToggleGroup">
+                                    <tooltip>
+                                        <Tooltip text="Preview only"/>
+                                    </tooltip>
+                                </ToggleButton>
+                            </children>
+                        </HBox>
+                        <Label fx:id="browserPro" alignment="CENTER" contentDisplay="RIGHT"
+                               minWidth="-Infinity"
+                               styleClass="output-button,browser,chrome-button" text="Browser"
+                               textAlignment="LEFT">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-external-link"/>
+                            </graphic>
+                            <tooltip>
+                                <Tooltip text="Open in Browser"/>
+                            </tooltip>
+                        </Label>
                         <ToggleButton fx:id="appThemeToggle" alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
                                       focusTraversable="false" minHeight="28.0" minWidth="32.0" mnemonicParsing="false"
                                       prefHeight="28.0" prefWidth="32.0" styleClass="chrome-button,preview-theme-toggle"
@@ -514,6 +542,19 @@
                                 <Tooltip text="Settings"/>
                             </tooltip>
                         </ToggleButton>
+                        <MenuButton fx:id="appMenuButton" mnemonicParsing="false" styleClass="chrome-button" text="">
+                            <graphic>
+                                <FontIcon iconLiteral="fa-ellipsis-h"/>
+                            </graphic>
+                            <items>
+                                <MenuItem mnemonicParsing="false" onAction="#bugReport" text="Bug Report"/>
+                                <MenuItem mnemonicParsing="false" onAction="#openCommunityForum"
+                                          text="Community Forum"/>
+                                <MenuItem mnemonicParsing="false" onAction="#openGitterChat" text="Gitter Chat"/>
+                                <SeparatorMenuItem/>
+                                <MenuItem mnemonicParsing="false" onAction="#openGithubPage" text="Github Page"/>
+                            </items>
+                        </MenuButton>
                     </children>
                 </HBox>
             </top>

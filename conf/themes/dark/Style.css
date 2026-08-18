@@ -5,23 +5,32 @@
     -fx-base: #323334;
     -fx-background: #191A1B;
     -fx-control-inner-background: #121314;
+    -chrome-frame-bg: #1d1e20;
+    -chrome-editor-bg: #252628;
+    -chrome-preview-bg: #2a2c2e;
+    -chrome-workdir-bg: #222324;
+    -chrome-top-bg: #1a1b1c;
+    -chrome-button-bg: #2c2d2e;
+    -chrome-frame-border: #3a3b3d;
+    -chrome-button-border: #4a4b4d;
+    -chrome-icon: #c8c8c8;
 }
 
 .workspace-frame {
-    -fx-background-color: #1d1e20;
-    -fx-border-color: #3a3b3d;
+    -fx-background-color: -chrome-frame-bg;
+    -fx-border-color: -chrome-frame-border;
 }
 
 .pane-editor {
-    -fx-background-color: #252628;
+    -fx-background-color: -chrome-editor-bg;
 }
 
 .pane-preview {
-    -fx-background-color: #2a2c2e;
+    -fx-background-color: -chrome-preview-bg;
 }
 
 .pane-workdir {
-    -fx-background-color: #222324;
+    -fx-background-color: -chrome-workdir-bg;
 }
 
 /* Buttons */

@@ -18,6 +18,7 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.kodedu.other.JsonHelper.getJsonArrayOrEmpty;
 
@@ -33,6 +34,7 @@ public class StoredConfigBean extends ConfigurationBase {
     private StringProperty workingDirectory = new SimpleStringProperty();
     private ObservableList<Item> recentFiles = FXCollections.observableArrayList();
     private ObservableList<String> favoriteDirectories = FXCollections.observableArrayList();
+    private ObservableList<WorkspaceEntry> workspaces = FXCollections.observableArrayList();
 
 
     @Override
@@ -75,6 +77,62 @@ public class StoredConfigBean extends ConfigurationBase {
         this.favoriteDirectories = favoriteDirectories;
     }
 
+    public ObservableList<WorkspaceEntry> getWorkspaces() {
+        return workspaces;
+    }
+
+    public Optional<WorkspaceEntry> findOpenWorkspace() {
+        return workspaces.stream().filter(WorkspaceEntry::isOpen).findFirst();
+    }
+
+    public void activateWorkspace(Path path) {
+        if (path == null) {
+            return;
+        }
+        String value = path.toString();
+        for (WorkspaceEntry entry : workspaces) {
+            entry.setOpen(value.equals(entry.getPath()));
+        }
+        Optional<WorkspaceEntry> existing = workspaces.stream()
+                .filter(entry -> value.equals(entry.getPath()))
+                .findFirst();
+        if (existing.isPresent()) {
+            existing.get().setOpen(true);
+        } else {
+            workspaces.add(new WorkspaceEntry(value, true));
+        }
+        setWorkingDirectory(value);
+        save();
+    }
+
+    public void updateOpenWorkspacePath(Path path) {
+        if (path == null) {
+            return;
+        }
+        String value = path.toString();
+        findOpenWorkspace().ifPresent(entry -> entry.setPath(value));
+        setWorkingDirectory(value);
+    }
+
+    public void closeWorkspace(String path) {
+        workspaces.stream()
+                .filter(entry -> Objects.equals(path, entry.getPath()))
+                .forEach(entry -> entry.setOpen(false));
+        save();
+    }
+
+    public void removeWorkspace(String path) {
+        workspaces.removeIf(entry -> Objects.equals(path, entry.getPath()));
+        save();
+    }
+
+    public void migrateWorkingDirectoryIntoWorkspaces() {
+        String current = getWorkingDirectory();
+        if (workspaces.isEmpty() && current != null && !current.isBlank()) {
+            workspaces.add(new WorkspaceEntry(current, true));
+        }
+    }
+
     @Override
     public VBox createForm() {
         return null;
@@ -96,15 +154,12 @@ public class StoredConfigBean extends ConfigurationBase {
 
         JsonArray recentFiles = getJsonArrayOrEmpty(jsonObject, "recentFiles");
         JsonArray favoriteDirectories = getJsonArrayOrEmpty(jsonObject, "favoriteDirectories");
+        JsonArray workspacesJson = getJsonArrayOrEmpty(jsonObject, "workspaces");
         String workingDirectory = jsonObject.getString("workingDirectory", System.getProperty("user.home"));
 
         IOHelper.close(jsonReader, fileReader);
 
         threadService.runActionLater(() -> {
-
-            if (Objects.nonNull(workingDirectory)) {
-                this.workingDirectory.setValue(workingDirectory);
-            }
 
             if (Objects.nonNull(recentFiles)) {
                 recentFiles.stream().map(e -> (JsonString) e).map(e -> e.getString())
@@ -114,6 +169,20 @@ public class StoredConfigBean extends ConfigurationBase {
             if (Objects.nonNull(favoriteDirectories)) {
                 favoriteDirectories.stream().map(e -> (JsonString) e).map(e -> e.getString()).forEach(this.favoriteDirectories::add);
             }
+            this.workspaces.clear();
+            for (JsonValue value : workspacesJson) {
+                if (value instanceof JsonObject workspaceObject) {
+                    String path = workspaceObject.getString("path", null);
+                    boolean open = workspaceObject.getBoolean("open", false);
+                    if (path != null && !path.isBlank()) {
+                        this.workspaces.add(new WorkspaceEntry(path, open));
+                    }
+                }
+            }
+            if (Objects.nonNull(workingDirectory)) {
+                this.workingDirectory.setValue(workingDirectory);
+            }
+            migrateWorkingDirectoryIntoWorkspaces();
         });
     }
 
@@ -128,6 +197,7 @@ public class StoredConfigBean extends ConfigurationBase {
 
         JsonArrayBuilder recentFilesArrayBuilder = Json.createArrayBuilder();
         JsonArrayBuilder favoriteDirectoriesArrayBuilder = Json.createArrayBuilder();
+        JsonArrayBuilder workspacesArrayBuilder = Json.createArrayBuilder();
 
         recentFiles.stream()
                 .map(Item::getPath)
@@ -138,10 +208,17 @@ public class StoredConfigBean extends ConfigurationBase {
         favoriteDirectories.stream()
                 .forEach(favoriteDirectoriesArrayBuilder::add);
 
+        workspaces.stream()
+                .filter(entry -> entry.getPath() != null && !entry.getPath().isBlank())
+                .forEach(entry -> workspacesArrayBuilder.add(Json.createObjectBuilder()
+                        .add("path", entry.getPath())
+                        .add("open", entry.isOpen())));
+
         objectBuilder
-                .add("workingDirectory", getWorkingDirectory())
+                .add("workingDirectory", getWorkingDirectory() == null ? "" : getWorkingDirectory())
                 .add("recentFiles", recentFilesArrayBuilder)
-                .add("favoriteDirectories", favoriteDirectoriesArrayBuilder);
+                .add("favoriteDirectories", favoriteDirectoriesArrayBuilder)
+                .add("workspaces", workspacesArrayBuilder);
 
         return objectBuilder.build();
     }

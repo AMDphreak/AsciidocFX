@@ -7,6 +7,12 @@ All notable changes are documented in this file.
 * Default spell check follows the OS locale instead of the first reverse-sorted dictionary (Turkish)
 * Replace rotated side rails with a top chrome bar, per-tab Outline/References, Export menu, Open in Browser, and a dockable Copilot pane to the right of preview
 * Copilot can be dragged onto drop zones; Preview/Preview Only stays on the preview pane; app vs document dark-mode are separate toggles
+* Widen the default Outline/References divider and persist its position
+* Compound Preview Side/Full control on the top bar; Browser stays a one-word control; Export and document preview theme sit together on the top bar
+* Files pane toggle on the top bar; Workdir/Recent live in the files pane; Open picks the working directory; breadcrumb replaces Go Up; file tree refreshes from filesystem watch events
+* App links move to a top-bar menu; version is in the native window title; workspaces persist in a Sticky Notes-style index
+* Quieter top bar; live outline and background contrast sliders on the left of the chrome
+* Document preview theme follows the app theme on app-theme change; the document moon/sun control stays an override until the next app-theme change
 
 ## [Version ~1.8.11](https://github.com/asciidocfx/AsciidocFX/releases/tag/v1.8.11) (10.2025)
 

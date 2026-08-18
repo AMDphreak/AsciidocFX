@@ -3,23 +3,32 @@
 .root {
     -fx-base: #ececec;
     -fx-background: #e4e5e7;
+    -chrome-frame-bg: #ececef;
+    -chrome-editor-bg: #f3f3f3;
+    -chrome-preview-bg: #f6f6f5;
+    -chrome-workdir-bg: #efefef;
+    -chrome-top-bg: #e8e9eb;
+    -chrome-button-bg: #f0f0f0;
+    -chrome-frame-border: #c8c9cc;
+    -chrome-button-border: #d0d1d4;
+    -chrome-icon: #3a3a3a;
 }
 
 .workspace-frame {
-    -fx-background-color: #ececef;
-    -fx-border-color: #c8c9cc;
+    -fx-background-color: -chrome-frame-bg;
+    -fx-border-color: -chrome-frame-border;
 }
 
 .pane-editor {
-    -fx-background-color: #f3f3f3;
+    -fx-background-color: -chrome-editor-bg;
 }
 
 .pane-preview {
-    -fx-background-color: #f6f6f5;
+    -fx-background-color: -chrome-preview-bg;
 }
 
 .pane-workdir {
-    -fx-background-color: #efefef;
+    -fx-background-color: -chrome-workdir-bg;
 }
 
 .button, .menu-button, .toggle-button, .choice-box {

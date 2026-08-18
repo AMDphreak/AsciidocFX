@@ -148,11 +148,11 @@ import static java.util.Objects.nonNull;
 public class ApplicationController extends TextWebSocketHandler implements Initializable {
 
     private Logger logger = LoggerFactory.getLogger(ApplicationController.class);
-    public Label goUpLabel;
     public VBox terminalLeftBox;
     public TabPane terminalTabPane;
     public ToggleButton workdirToggle;
     public ToggleButton recentToggle;
+    public ToggleButton filesToggle;
     public ToggleButton outlineToggle;
     public ToggleButton previewSplitToggle;
     public ToggleButton toggleZenButton;
@@ -190,7 +190,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public ProgressBar progressBar;
     public Menu favoriteDirMenu;
     public MenuItem addToFavoriteDir;
-    public MenuItem afxVersionItem;
     public MenuItem renameFile;
     public MenuItem newFile;
     public CheckMenuItem showHiddenFiles;
@@ -198,8 +197,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public SplitPane splitPane;
     public SplitPane splitPaneVertical;
     public TreeView<Item> fileSystemView;
-    public Label workingDirButton;
-    public Label refreshLabel;
+    public FlowPane workdirBreadcrumb;
+    public CheckMenuItem workdirShowHiddenFiles;
     public AnchorPane rootAnchor;
     public ProgressIndicator indikator;
     public ListView<Item> recentListView;
@@ -212,6 +211,11 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public MenuItem copyTreeItem;
     public MenuItem copyListItem;
     public MenuButton leftButton;
+    public MenuButton appMenuButton;
+    public Button changeWorkingDir;
+    public Button workspaceIndexButton;
+    public Slider outlineContrastSlider;
+    public Slider backgroundContrastSlider;
     public Menu menuTemplates;
     public Label htmlPro;
     public Label pdfPro;
@@ -231,6 +235,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     private CopilotDropOverlay copilotDropOverlay;
     private EventHandler<MouseEvent> copilotDragMove;
     private EventHandler<MouseEvent> copilotDragRelease;
+    private WorkspaceIndexStage workspaceIndexStage;
+    private boolean docThemeOverridden;
+    private boolean syncingPreviewFromAppTheme;
 
     private Path userHome = IOHelper.getPath(System.getProperty("user.home"));
 
@@ -426,7 +433,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         // Listen to working directory update events
         eventService.subscribe(DirectoryService.WORKING_DIRECTORY_UPDATE_EVENT, event -> {
             Path path = (Path) event.getData();
-            getStage().setTitle(String.format("AsciidocFX - %s", path));
+            updateWindowTitle(path);
+            updateWorkdirBreadcrumb(path);
+            storedConfigBean.updateOpenWorkspacePath(path);
         });
     }
 
@@ -715,8 +724,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         });
 
-        afxVersionItem.setText(String.join(" ", "Version", version));
-
         ContextMenu htmlProMenu = new ContextMenu();
         htmlProMenu.getStyleClass().add("build-menu");
         htmlPro.setContextMenu(htmlProMenu);
@@ -801,6 +808,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         wireExportMenu();
         wireDocumentChrome();
+        wireChromeControls();
 
         fileSystemView.setCellFactory(param -> {
             TreeCell<Item> cell = new TextFieldTreeCell<Item>();
@@ -1399,9 +1407,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public void applyInitialConfigurations() {
 
         editorConfigBean.getFontFamily().stream().findFirst().ifPresent(fontFamily -> {
-            scene.getRoot().setStyle(String.format("-fx-font-family: '%s';", fontFamily));
             editorConfigBean.updateFontFamily(fontFamily);
         });
+        applyChromeSurfaces(scene.getRoot());
 
         editorConfigBean.getAceFontFamily().stream().findFirst().ifPresent(fontFamily -> {
             applyForAllEditorPanes(editorPane -> editorPane.setFontFamily(fontFamily));
@@ -1412,6 +1420,9 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         dividers.get(0).setPosition(editorConfigBean.getFirstSplitter());
         if (dividers.size() > 1) {
             dividers.get(1).setPosition(editorConfigBean.getSecondSplitter());
+        }
+        if (documentSplitPane != null && !documentSplitPane.getDividers().isEmpty()) {
+            documentSplitPane.setDividerPosition(0, editorConfigBean.getDocumentNavSplitter());
         }
 
         editorConfigBean.getEditorTheme().stream().findFirst().ifPresent(theme -> {
@@ -1487,11 +1498,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         // TODO: Lazy initial ?
         mathJaxService.reload();
 
-        String workingDirectory = storedConfigBean.getWorkingDirectory();
-
-        if (nonNull(workingDirectory)) {
-            directoryService.changeWorkigDir(IOHelper.getPath(workingDirectory));
-        }
+        storedConfigBean.migrateWorkingDirectoryIntoWorkspaces();
+        threadService.runActionLater(this::restoreWorkspaceOrIndex);
 
         showHiddenFiles.selectedProperty().set(editorConfigBean.getShowHiddenFiles());
 
@@ -1506,7 +1514,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         editorConfigBean.getFontFamily().addListener((ListChangeListener<String>) c -> {
             c.next();
             if (c.wasAdded()) {
-                scene.getRoot().setStyle(String.format("-fx-font-family: '%s';", c.getList().get(0)));
+                applyChromeSurfaces(scene.getRoot());
             }
         });
 
@@ -1551,9 +1559,26 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         ObservableList<SplitPane.Divider> dividers = splitPane.getDividers();
 
-        dividers.get(0).positionProperty().bindBidirectional(editorConfigBean.firstSplitterProperty());
+        dividers.get(0).positionProperty().addListener((observable, oldValue, position) -> {
+            if (filesToggle != null && filesToggle.isSelected() && position.doubleValue() > 0.05) {
+                editorConfigBean.setFirstSplitter(position.doubleValue());
+            }
+        });
         if (dividers.size() > 1) {
             dividers.get(1).positionProperty().bindBidirectional(editorConfigBean.secondSplitterProperty());
+        }
+        if (documentSplitPane != null && !documentSplitPane.getDividers().isEmpty()) {
+            documentSplitPane.getDividers().get(0).positionProperty().addListener((observable, oldValue, position) -> {
+                if (documentNavTabs != null && documentNavTabs.isVisible() && position.doubleValue() > 0.08) {
+                    editorConfigBean.setDocumentNavSplitter(position.doubleValue());
+                }
+            });
+            editorConfigBean.documentNavSplitterProperty().addListener((observable, oldValue, position) -> {
+                if (documentNavTabs != null && documentNavTabs.isVisible()
+                        && Math.abs(documentSplitPane.getDividerPositions()[0] - position.doubleValue()) > 0.001) {
+                    documentSplitPane.setDividerPosition(0, position.doubleValue());
+                }
+            });
         }
 
         SplitPane.Divider verticalDivider = mainVerticalSplitPane.getDividers().get(0);
@@ -1596,11 +1621,15 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         });
 
         editorConfigBean.showHiddenFilesProperty().bindBidirectional(showHiddenFiles.selectedProperty());
+        if (workdirShowHiddenFiles != null) {
+            workdirShowHiddenFiles.selectedProperty().bindBidirectional(showHiddenFiles.selectedProperty());
+        }
 
         if (nonNull(previewDarkToggle)) {
             previewDarkToggle.setFocusTraversable(false);
             previewDarkToggle.setText("");
             previewDarkToggle.selectedProperty().bindBidirectional(editorConfigBean.previewDarkProperty());
+            previewDarkToggle.setOnAction(event -> docThemeOverridden = true);
             syncPreviewDarkToggle();
         }
         if (nonNull(appThemeToggle)) {
@@ -1610,13 +1639,24 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             appThemeToggle.setOnAction(event -> switchAppTheme(appThemeToggle.isSelected()));
         }
         editorConfigBean.previewDarkProperty().addListener((observable, wasDark, dark) -> {
+            if (!syncingPreviewFromAppTheme) {
+                docThemeOverridden = true;
+            }
             applyPreviewTheme();
             syncPreviewDarkToggle();
         });
+        if (outlineContrastSlider != null) {
+            outlineContrastSlider.valueProperty().bindBidirectional(editorConfigBean.outlineContrastProperty());
+            outlineContrastSlider.valueProperty().addListener((observable, oldValue, newValue) -> applyChromeSurfaces());
+        }
+        if (backgroundContrastSlider != null) {
+            backgroundContrastSlider.valueProperty().bindBidirectional(editorConfigBean.backgroundContrastProperty());
+            backgroundContrastSlider.valueProperty().addListener((observable, oldValue, newValue) -> applyChromeSurfaces());
+        }
 
         storedConfigBean.workingDirectoryProperty().addListener((observable, oldValue, newValue) -> {
             if (nonNull(newValue) && isNull(oldValue)) {
-                directoryService.changeWorkigDir(IOHelper.getPath(newValue));
+                restoreWorkspaceOrIndex();
             }
         });
 
@@ -2291,6 +2331,8 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     @FXML
     public void changeWorkingDir(Event actionEvent) {
         directoryService.askWorkingDir();
+        directoryService.getWorkingDirectory().ifPresent(storedConfigBean::activateWorkspace);
+        updateWorkdirBreadcrumb(directoryService.getWorkingDirectory().orElse(null));
     }
 
     @Override
@@ -2987,10 +3029,6 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         });
     }
 
-    public void goUp(ActionEvent actionEvent) {
-        directoryService.goUp();
-    }
-
     @FXML
     public void copyPath(ActionEvent actionEvent) {
         Path path = tabService.getSelectedTabPath();
@@ -3077,19 +3115,33 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     @FXML
     public void toggleRecentView(ActionEvent actionEvent) {
-        boolean selected = recentToggle != null && recentToggle.isSelected();
-        splitPane.setDividerPosition(0, selected ? 0.17 : 0);
-        if (selected) {
+        showFilesPane(true);
+        if (recentToggle != null && recentToggle.isSelected()) {
             leftShowerHider.showNode(recentListView);
         }
     }
 
     @FXML
     public void toggleWorkdirView(ActionEvent actionEvent) {
-        boolean selected = workdirToggle != null && workdirToggle.isSelected();
-        splitPane.setDividerPosition(0, selected ? 0.17 : 0);
-        if (selected) {
+        showFilesPane(true);
+        if (workdirToggle != null && workdirToggle.isSelected()) {
             leftShowerHider.showDefaultNode();
+        }
+    }
+
+    @FXML
+    public void toggleFilesView(ActionEvent actionEvent) {
+        boolean selected = filesToggle != null && filesToggle.isSelected();
+        showFilesPane(selected);
+        if (selected) {
+            if (recentToggle != null && recentToggle.isSelected()) {
+                leftShowerHider.showNode(recentListView);
+            } else {
+                if (workdirToggle != null) {
+                    workdirToggle.setSelected(true);
+                }
+                leftShowerHider.showDefaultNode();
+            }
         }
     }
 
@@ -3141,13 +3193,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         }
 
         if (selected) {
-            splitPane.setDividerPositions(0, 0);
+            restoreMainDividers();
             rightShowerHider.showDefaultNode();
         } else {
-            splitPane.setDividerPositions(1, 1);
-            threadService.schedule(() -> {
-                threadService.runActionLater(this::restoreMainDividers);
-            }, 25, TimeUnit.MILLISECONDS);
+            restoreMainDividers();
         }
     }
 
@@ -3255,6 +3304,137 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         }
     }
 
+    private void wireChromeControls() {
+        if (rightToggleGroup != null) {
+            rightToggleGroup.selectedToggleProperty().addListener((observable, oldToggle, newToggle) -> {
+                if (newToggle == null && oldToggle != null) {
+                    oldToggle.setSelected(true);
+                }
+            });
+        }
+        directoryService.getWorkingDirectory().ifPresent(path -> {
+            updateWindowTitle(path);
+            updateWorkdirBreadcrumb(path);
+        });
+        applyChromeSurfaces();
+    }
+
+    @FXML
+    public void showWorkspaceIndex() {
+        if (workspaceIndexStage == null) {
+            workspaceIndexStage = new WorkspaceIndexStage(storedConfigBean, directoryService, this::applyCurrentTheme);
+        }
+        workspaceIndexStage.show(getStage());
+    }
+
+    private boolean workspaceRestoreAttempted;
+
+    private void restoreWorkspaceOrIndex() {
+        Optional<WorkspaceEntry> openWorkspace = storedConfigBean.findOpenWorkspace();
+        if (openWorkspace.isPresent()) {
+            workspaceRestoreAttempted = true;
+            directoryService.changeWorkigDir(IOHelper.getPath(openWorkspace.get().getPath()));
+            return;
+        }
+        if (!storedConfigBean.getWorkspaces().isEmpty() && !workspaceRestoreAttempted) {
+            workspaceRestoreAttempted = true;
+            showWorkspaceIndex();
+        }
+    }
+
+    private void showFilesPane(boolean visible) {
+        if (filesToggle != null && filesToggle.isSelected() != visible) {
+            filesToggle.setSelected(visible);
+        }
+        if (visible) {
+            double position = editorConfigBean.getFirstSplitter();
+            if (position < 0.08) {
+                position = 0.17;
+            }
+            splitPane.setDividerPosition(0, position);
+        } else {
+            splitPane.setDividerPosition(0, 0);
+        }
+    }
+
+    private boolean filesPaneVisible() {
+        return filesToggle == null || filesToggle.isSelected();
+    }
+
+    private void updateWindowTitle(Path workdir) {
+        if (getStage() == null) {
+            return;
+        }
+        StringBuilder title = new StringBuilder("AsciidocFX");
+        if (nonNull(version) && !version.isBlank()) {
+            title.append(" ").append(version);
+        }
+        if (workdir != null) {
+            Path name = workdir.getFileName();
+            String tail = name != null ? name.toString() : workdir.toString();
+            if (!tail.isBlank()) {
+                title.append(" — ").append(tail);
+            }
+        }
+        getStage().setTitle(title.toString());
+    }
+
+    private void updateWorkdirBreadcrumb(Path path) {
+        if (workdirBreadcrumb == null) {
+            return;
+        }
+        workdirBreadcrumb.getChildren().clear();
+        if (path == null) {
+            return;
+        }
+        Path normalized = path.toAbsolutePath().normalize();
+        List<Path> chain = new ArrayList<>();
+        Path currentPath = normalized;
+        while (currentPath != null) {
+            chain.add(0, currentPath);
+            currentPath = currentPath.getParent();
+        }
+        for (int i = 0; i < chain.size(); i++) {
+            Path segment = chain.get(i);
+            String label = Optional.ofNullable(segment.getFileName())
+                    .map(Path::toString)
+                    .orElseGet(segment::toString);
+            Button crumb = new Button(label);
+            crumb.getStyleClass().add("breadcrumb-segment");
+            crumb.setOnAction(event -> directoryService.changeWorkigDir(segment));
+            workdirBreadcrumb.getChildren().add(crumb);
+            if (i < chain.size() - 1) {
+                Label sep = new Label("/");
+                sep.getStyleClass().add("breadcrumb-sep");
+                workdirBreadcrumb.getChildren().add(sep);
+            }
+        }
+    }
+
+    private void applyChromeSurfaces() {
+        if (scene != null && scene.getRoot() != null) {
+            applyChromeSurfaces(scene.getRoot());
+        }
+        if (getStage() != null && getStage().getScene() != null) {
+            applyChromeSurfaces(getStage().getScene().getRoot());
+        }
+    }
+
+    private void applyChromeSurfaces(Parent root) {
+        if (root == null || editorConfigBean == null) {
+            return;
+        }
+        boolean dark = editorConfigBean.getEditorTheme().stream()
+                .findFirst()
+                .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
+                .orElse(true);
+        String fontFamily = editorConfigBean.getFontFamily() == null || editorConfigBean.getFontFamily().isEmpty()
+                ? null
+                : editorConfigBean.getFontFamily().get(0);
+        ChromeContrast.apply(root, dark, editorConfigBean.getOutlineContrast(),
+                editorConfigBean.getBackgroundContrast(), fontFamily);
+    }
+
     private void applyTabChrome(MyTab tab) {
         if (outlineToggle != null) {
             outlineToggle.setSelected(tab.isOutlineVisible());
@@ -3279,7 +3459,13 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         }
         documentNavTabs.setVisible(visible);
         documentNavTabs.setManaged(visible);
-        documentSplitPane.setDividerPosition(0, visible ? 0.22 : 0);
+        if (visible) {
+            documentNavTabs.setMinWidth(190);
+            documentSplitPane.setDividerPosition(0, editorConfigBean.getDocumentNavSplitter());
+        } else {
+            documentNavTabs.setMinWidth(0);
+            documentSplitPane.setDividerPosition(0, 0);
+        }
     }
 
     public CopilotDock getCopilotDock() {
@@ -3432,16 +3618,18 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             splitPane.setDividerPositions(collapsed);
             return;
         }
+        double filesPos = filesPaneVisible() ? Math.max(0.12, editorConfigBean.getFirstSplitter()) : 0;
+        double second = editorConfigBean.getSecondSplitter();
         int copilotIdx = items.indexOf(copilotPanel);
         if (copilotIdx == 1 && n >= 4) {
-            splitPane.setDividerPositions(0.15, 0.36, 0.72);
+            splitPane.setDividerPositions(filesPos, 0.36, 0.72);
             return;
         }
         if (copilotIdx == n - 1 && n >= 4) {
-            splitPane.setDividerPositions(0.15, 0.48, 0.74);
+            splitPane.setDividerPositions(filesPos, Math.max(filesPos + 0.2, second), 0.74);
             return;
         }
-        splitPane.setDividerPositions(0.17, 0.59);
+        splitPane.setDividerPositions(filesPos, second);
     }
 
     private void switchAppTheme(boolean dark) {
@@ -3461,18 +3649,37 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             themes.add(0, chosen);
         }
         applyTheme(chosen, getAllStages());
+        followPreviewThemeToAppTheme();
         editorConfigBean.save();
         syncAppThemeToggle();
+    }
+
+    private void followPreviewThemeToAppTheme() {
+        docThemeOverridden = false;
+        boolean dark = isAppThemeDark();
+        if (editorConfigBean.isPreviewDark() == dark) {
+            return;
+        }
+        syncingPreviewFromAppTheme = true;
+        try {
+            editorConfigBean.setPreviewDark(dark);
+        } finally {
+            syncingPreviewFromAppTheme = false;
+        }
+    }
+
+    private boolean isAppThemeDark() {
+        return editorConfigBean.getEditorTheme().stream()
+                .findFirst()
+                .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
+                .orElse(true);
     }
 
     private void syncAppThemeToggle() {
         if (isNull(appThemeToggle)) {
             return;
         }
-        boolean dark = editorConfigBean.getEditorTheme().stream()
-                .findFirst()
-                .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
-                .orElse(true);
+        boolean dark = isAppThemeDark();
         appThemeToggle.setSelected(dark);
         if (appThemeToggle.getGraphic() instanceof FontIcon icon) {
             icon.setIconLiteral(dark ? "fa-moon-o" : "fa-sun-o");
@@ -3526,9 +3733,11 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             return;
         }
         threadService.runActionLater(()->{
-            scene.getRoot().setStyle(String.format("-fx-font-family: '%s';", fontFamily));
+            applyChromeSurfaces(scene.getRoot());
             for (Stage stg : stages) {
-                stg.getScene().getRoot().setStyle(String.format("-fx-font-family: '%s';", fontFamily));
+                if (stg != null && stg.getScene() != null) {
+                    applyChromeSurfaces(stg.getScene().getRoot());
+                }
             }
         });
     }
@@ -3559,6 +3768,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                         ObservableList<String> stylesheets = stage.getScene().getStylesheets();
                         stylesheets.clear();
                         stylesheets.add(themeUri);
+                        applyChromeSurfaces(stage.getScene().getRoot());
                     }
                 }
 
@@ -3596,6 +3806,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                                     .encodeToString(String.format(".root { -fx-font-size: %dpx; }", editorFontSize)
                                             .getBytes(StandardCharsets.UTF_8)));
                         }
+                        applyChromeSurfaces(stageScene.getRoot());
 
                     }
                 }

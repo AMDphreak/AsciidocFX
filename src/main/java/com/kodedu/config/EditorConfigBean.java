@@ -60,6 +60,9 @@ public class EditorConfigBean extends ConfigurationBase {
     private DoubleProperty firstSplitter = new SimpleDoubleProperty(0.17551963048498845);
     private DoubleProperty secondSplitter = new SimpleDoubleProperty(0.5996920708237106);
     private DoubleProperty verticalSplitter = new SimpleDoubleProperty(0.5);
+    private DoubleProperty documentNavSplitter = new SimpleDoubleProperty(0.34);
+    private DoubleProperty outlineContrast = new SimpleDoubleProperty(1.0);
+    private DoubleProperty backgroundContrast = new SimpleDoubleProperty(1.0);
     private ObjectProperty<Integer> aceFontSize = new SimpleObjectProperty(16);
     private ObjectProperty<Integer> editorFontSize = new SimpleObjectProperty(14);
     private DoubleProperty scrollSpeed = new SimpleDoubleProperty(5);
@@ -503,6 +506,42 @@ public class EditorConfigBean extends ConfigurationBase {
         this.verticalSplitter.set(verticalSplitter);
     }
 
+    public double getDocumentNavSplitter() {
+        return documentNavSplitter.get();
+    }
+
+    public DoubleProperty documentNavSplitterProperty() {
+        return documentNavSplitter;
+    }
+
+    public void setDocumentNavSplitter(double documentNavSplitter) {
+        this.documentNavSplitter.set(documentNavSplitter);
+    }
+
+    public double getOutlineContrast() {
+        return outlineContrast.get();
+    }
+
+    public DoubleProperty outlineContrastProperty() {
+        return outlineContrast;
+    }
+
+    public void setOutlineContrast(double outlineContrast) {
+        this.outlineContrast.set(outlineContrast);
+    }
+
+    public double getBackgroundContrast() {
+        return backgroundContrast.get();
+    }
+
+    public DoubleProperty backgroundContrastProperty() {
+        return backgroundContrast;
+    }
+
+    public void setBackgroundContrast(double backgroundContrast) {
+        this.backgroundContrast.set(backgroundContrast);
+    }
+
     @Override
     public String formName() {
         return "Editor Settings";
@@ -721,6 +760,18 @@ public class EditorConfigBean extends ConfigurationBase {
                 this.setVerticalSplitter(secondSplitter.doubleValue());
             }
 
+            if (JsonHelper.containsNumber(jsonObject, "documentNavSplitter")) {
+                this.setDocumentNavSplitter(jsonObject.getJsonNumber("documentNavSplitter").doubleValue());
+            }
+
+            if (JsonHelper.containsNumber(jsonObject, "outlineContrast")) {
+                this.setOutlineContrast(jsonObject.getJsonNumber("outlineContrast").doubleValue());
+            }
+
+            if (JsonHelper.containsNumber(jsonObject, "backgroundContrast")) {
+                this.setBackgroundContrast(jsonObject.getJsonNumber("backgroundContrast").doubleValue());
+            }
+
             fadeOut(infoLabel, "Loaded...");
 
         });
@@ -837,6 +888,9 @@ public class EditorConfigBean extends ConfigurationBase {
                 .add("firstSplitter", getFirstSplitter())
                 .add("secondSplitter", getSecondSplitter())
                 .add("verticalSplitter", getVerticalSplitter())
+                .add("documentNavSplitter", getDocumentNavSplitter())
+                .add("outlineContrast", getOutlineContrast())
+                .add("backgroundContrast", getBackgroundContrast())
                 .add("autoUpdate", getAutoUpdate())
                 .add("showHiddenFiles", getShowHiddenFiles())
                 .add("newInstall", getNewInstall())
