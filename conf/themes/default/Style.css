@@ -1,25 +1,135 @@
 @import '../Shared.css';
 
 .root {
-    -fx-base: #ececec;
-    -fx-background: #e4e5e7;
+    -fx-base: #d4c8b4;
+    -fx-background: #c4b8a6;
+    -fx-control-inner-background: #fbf6ea;
 }
 
-.workspace-frame {
-    -fx-background-color: #ececef;
-    -fx-border-color: #c8c9cc;
+.desk {
+    -fx-background-color: #c4b8a6;
 }
 
-.pane-editor {
-    -fx-background-color: #f3f3f3;
+.identity {
+    -fx-background-color: #c4b8a6;
 }
 
-.pane-preview {
-    -fx-background-color: #f6f6f5;
+.wordmark {
+    -fx-text-fill: #3a2f24;
 }
 
-.pane-workdir {
-    -fx-background-color: #efefef;
+.identity-path {
+    -fx-text-fill: #5a4c3c;
+}
+
+.identity-switch,
+.identity-publish {
+    -fx-text-fill: #3a2f24;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.identity-switch:hover,
+.identity-publish:hover,
+.identity-switch:selected {
+    -fx-text-fill: #1f1812;
+    -fx-border-color: #3a2f24;
+    -fx-background-color: transparent;
+}
+
+.library {
+    -fx-background-color: #b7aa97;
+}
+
+.sheet-source {
+    -fx-background-color: #fbf6ea;
+}
+
+.sheet-page {
+    -fx-background-color: #f3f1ec;
+}
+
+.folio-mark,
+.folio-open {
+    -fx-text-fill: #5a534a;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.folio-mark:hover,
+.folio-open:hover,
+.folio-mark:selected {
+    -fx-text-fill: #2a241c;
+    -fx-border-color: #2a241c;
+    -fx-background-color: transparent;
+}
+
+.slug {
+    -fx-background-color: #efe6d4;
+    -fx-border-color: #8a7b68;
+    -fx-text-fill: #3a2f24;
+}
+
+.slug:hover {
+    -fx-background-color: #f7f0e2;
+}
+
+.typecase {
+    -fx-background-color: #4a3f32;
+}
+
+.typecase-slug {
+    -fx-background-color: #3f352b;
+    -fx-border-color: #6a5c4c;
+    -fx-text-fill: #f3ead8;
+}
+
+.typecase-slug:hover {
+    -fx-background-color: #56493c;
+}
+
+.typecase-slug:selected {
+    -fx-background-color: #fbf6ea;
+    -fx-text-fill: #3a3228;
+    -fx-border-color: #fbf6ea;
+}
+
+.typecase-status .label {
+    -fx-text-fill: #e8dcc8;
+}
+
+.desk-stamp,
+.copilot-drop-zone {
+    -fx-background-color: rgba(251, 246, 234, 0.35);
+    -fx-border-color: #4a3f32;
+}
+
+.desk-stamp.active,
+.copilot-drop-zone.active {
+    -fx-background-color: rgba(251, 246, 234, 0.72);
+    -fx-border-color: #2a241c;
+}
+
+.desk-stamp .label,
+.copilot-drop-zone .label {
+    -fx-text-fill: #2a241c;
+}
+
+.ask-sheet {
+    -fx-background-color: #fbf6ea;
+}
+
+.ask-title {
+    -fx-text-fill: #3a2f24;
+}
+
+.desk .split-pane-divider {
+    -fx-background-color: #c4b8a6;
+    -fx-padding: 0 3 0 3;
+}
+
+.desk .scroll-bar {
+    -fx-background-color: #efe6d4;
 }
 
 .button, .menu-button, .toggle-button, .choice-box {
@@ -99,8 +209,8 @@
 }
 
 .copilot-mode-button:selected {
-    -fx-background-color: #0078d4;
-    -fx-text-fill: white;
+    -fx-background-color: #4a3f32;
+    -fx-text-fill: #fbf6ea;
 }
 
 .copilot-mode-selector {
@@ -108,12 +218,12 @@
 }
 
 .copilot-send-button {
-    -fx-background-color: #0078d4;
-    -fx-text-fill: white;
+    -fx-background-color: #4a3f32;
+    -fx-text-fill: #fbf6ea;
 }
 
 .copilot-send-button:hover {
-    -fx-background-color: #005a9e;
+    -fx-background-color: #3a3228;
 }
 
 .copilot-stop-button {
@@ -146,4 +256,67 @@
     -fx-border-color: rgb(200, 200, 200);
     -fx-font-size: 11px;
 }
+
+.desk .identity-switch.toggle-button,
+.desk .identity-publish.menu-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #3a2f24;
+    -fx-background-radius: 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.desk .identity-switch.toggle-button:hover,
+.desk .identity-publish.menu-button:hover,
+.desk .identity-switch.toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1f1812;
+    -fx-border-color: #3a2f24;
+}
+
+.desk .folio-mark.toggle-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #5a534a;
+    -fx-background-radius: 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.desk .folio-mark.toggle-button:hover,
+.desk .folio-mark.toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2a241c;
+    -fx-border-color: #2a241c;
+}
+
+.desk .slug.button,
+.desk .slug.menu-button {
+    -fx-background-color: #efe6d4;
+    -fx-border-color: #8a7b68;
+    -fx-text-fill: #3a2f24;
+}
+
+.desk .typecase-slug.toggle-button {
+    -fx-background-color: #3f352b;
+    -fx-border-color: #6a5c4c;
+    -fx-text-fill: #f3ead8;
+    -fx-background-radius: 1;
+}
+
+.desk .typecase-slug.toggle-button:hover {
+    -fx-background-color: #56493c;
+}
+
+.desk .typecase-slug.toggle-button:selected {
+    -fx-background-color: #fbf6ea;
+    -fx-text-fill: #3a3228;
+    -fx-border-color: #fbf6ea;
+}
+
+.desk .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.desk .tab:selected {
+    -fx-background-color: #fbf6ea;
 }

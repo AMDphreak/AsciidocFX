@@ -7,26 +7,26 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 
 /**
- * Drop zones shown while dragging Copilot. Hit-testing uses screen coordinates
+ * Drop stamps shown while dragging Ask. Hit-testing uses screen coordinates
  * so the overlay can stay mouse-transparent during the drag.
  */
 public class CopilotDropOverlay extends StackPane {
 
-    private final DropZone top = zone("Top of workspace", CopilotDock.TOP_OF_WORKSPACE);
-    private final DropZone bottom = zone("Bottom of window", CopilotDock.BOTTOM_OF_WINDOW);
-    private final DropZone left = zone("Left of editor", CopilotDock.LEFT_OF_DOCUMENT);
-    private final DropZone right = zone("Right of preview", CopilotDock.RIGHT_OF_PREVIEW);
-    private final DropZone center = zone("Pop-out window", CopilotDock.FLOAT);
+    private final DropZone top = zone("Above the board", CopilotDock.TOP_OF_WORKSPACE);
+    private final DropZone bottom = zone("Above the case", CopilotDock.BOTTOM_OF_WINDOW);
+    private final DropZone left = zone("Before the source", CopilotDock.LEFT_OF_DOCUMENT);
+    private final DropZone right = zone("Beside the page", CopilotDock.RIGHT_OF_PREVIEW);
+    private final DropZone center = zone("On the desk", CopilotDock.FLOAT);
 
-    private CopilotDock hovered = CopilotDock.RIGHT_OF_PREVIEW;
+    private CopilotDock hovered = CopilotDock.BOTTOM_OF_WINDOW;
 
     public CopilotDropOverlay() {
-        getStyleClass().add("copilot-drop-overlay");
+        getStyleClass().addAll("copilot-drop-overlay", "desk-stamp-overlay");
         setVisible(false);
         setMouseTransparent(true);
 
         BorderPane layout = new BorderPane();
-        layout.getStyleClass().add("copilot-drop-layout");
+        layout.getStyleClass().add("desk-stamp-layout");
         layout.setTop(top);
         layout.setBottom(bottom);
         layout.setLeft(left);
@@ -43,7 +43,7 @@ public class CopilotDropOverlay extends StackPane {
 
     public void showZones() {
         setVisible(true);
-        hover(CopilotDock.RIGHT_OF_PREVIEW);
+        hover(CopilotDock.BOTTOM_OF_WINDOW);
     }
 
     public CopilotDock finish() {
@@ -114,7 +114,7 @@ public class CopilotDropOverlay extends StackPane {
 
         private DropZone(CopilotDock dock) {
             this.dock = dock;
-            getStyleClass().add("copilot-drop-zone");
+            getStyleClass().addAll("copilot-drop-zone", "desk-stamp");
         }
 
         public CopilotDock dock() {

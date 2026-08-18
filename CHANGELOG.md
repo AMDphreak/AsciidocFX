@@ -4,8 +4,7 @@ All notable changes are documented in this file.
 
 ## Unreleased
 
-* Replace rotated side rails with a top chrome bar, per-tab Outline/References, Export menu, Open in Browser, and a dockable Copilot pane to the right of preview
-* Copilot can be dragged onto drop zones; Preview/Preview Only stays on the preview pane; app vs document dark-mode are separate toggles
+* Composing-desk layout: identity strip, facing source and page sheets, typecase slugs, and Ask as a sheet above the case
 
 ## [Version ~1.8.11](https://github.com/asciidocfx/AsciidocFX/releases/tag/v1.8.11) (10.2025)
 

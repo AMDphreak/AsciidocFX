@@ -1,8 +1,8 @@
 package com.kodedu.component;
 
 /**
- * Where the Copilot chat sits relative to the document.
- * Default is {@link #RIGHT_OF_PREVIEW}: editor and preview stay together.
+ * Where Ask sits relative to the composing board.
+ * Default is {@link #BOTTOM_OF_WINDOW}: a sheet above the typecase.
  */
 public enum CopilotDock {
     RIGHT_OF_PREVIEW,

@@ -1,27 +1,135 @@
 @import '../Shared.css';
 
 .root {
-    /* Layered dark surfaces inspired by modern editor chrome (concepts only). */
-    -fx-base: #323334;
-    -fx-background: #191A1B;
-    -fx-control-inner-background: #121314;
+    -fx-base: #2c2720;
+    -fx-background: #141210;
+    -fx-control-inner-background: #1c1b19;
 }
 
-.workspace-frame {
-    -fx-background-color: #1d1e20;
-    -fx-border-color: #3a3b3d;
+.desk {
+    -fx-background-color: #141210;
 }
 
-.pane-editor {
-    -fx-background-color: #252628;
+.identity {
+    -fx-background-color: #141210;
 }
 
-.pane-preview {
-    -fx-background-color: #2a2c2e;
+.wordmark {
+    -fx-text-fill: #c4b082;
 }
 
-.pane-workdir {
-    -fx-background-color: #222324;
+.identity-path {
+    -fx-text-fill: #b8ab98;
+}
+
+.identity-switch,
+.identity-publish {
+    -fx-text-fill: #e6dcc8;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.identity-switch:hover,
+.identity-publish:hover,
+.identity-switch:selected {
+    -fx-text-fill: #c4b082;
+    -fx-border-color: #c4b082;
+    -fx-background-color: transparent;
+}
+
+.library {
+    -fx-background-color: #1a1714;
+}
+
+.sheet-source {
+    -fx-background-color: #1c1b19;
+}
+
+.sheet-page {
+    -fx-background-color: #22262a;
+}
+
+.folio-mark,
+.folio-open {
+    -fx-text-fill: #c5c8cc;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.folio-mark:hover,
+.folio-open:hover,
+.folio-mark:selected {
+    -fx-text-fill: #f0e6d4;
+    -fx-border-color: #c4b082;
+    -fx-background-color: transparent;
+}
+
+.slug {
+    -fx-background-color: #241f19;
+    -fx-border-color: #3d3429;
+    -fx-text-fill: #d7ccba;
+}
+
+.slug:hover {
+    -fx-background-color: #322b22;
+}
+
+.typecase {
+    -fx-background-color: #2a241c;
+}
+
+.typecase-slug {
+    -fx-background-color: #231e18;
+    -fx-border-color: #4a3f32;
+    -fx-text-fill: #e8dcc8;
+}
+
+.typecase-slug:hover {
+    -fx-background-color: #3a3228;
+}
+
+.typecase-slug:selected {
+    -fx-background-color: #d4c4a8;
+    -fx-text-fill: #1c1610;
+    -fx-border-color: #d4c4a8;
+}
+
+.typecase-status .label {
+    -fx-text-fill: #cbbfaa;
+}
+
+.desk-stamp,
+.copilot-drop-zone {
+    -fx-background-color: rgba(212, 196, 168, 0.10);
+    -fx-border-color: #c4b082;
+}
+
+.desk-stamp.active,
+.copilot-drop-zone.active {
+    -fx-background-color: rgba(212, 196, 168, 0.28);
+    -fx-border-color: #f0e0be;
+}
+
+.desk-stamp .label,
+.copilot-drop-zone .label {
+    -fx-text-fill: #f0e6d4;
+}
+
+.ask-sheet {
+    -fx-background-color: #1c1b19;
+}
+
+.ask-title {
+    -fx-text-fill: #c4b082;
+}
+
+.desk .split-pane-divider {
+    -fx-background-color: #141210;
+    -fx-padding: 0 3 0 3;
+}
+
+.desk .scroll-bar {
+    -fx-background-color: #1c1b19;
 }
 
 /* Buttons */
@@ -148,8 +256,8 @@
 }
 
 .copilot-mode-button:selected {
-    -fx-background-color: #264f78;
-    -fx-text-fill: white;
+    -fx-background-color: #8b6914;
+    -fx-text-fill: #f0e6d4;
 }
 
 .copilot-mode-selector {
@@ -157,12 +265,12 @@
 }
 
 .copilot-send-button {
-    -fx-background-color: #264f78;
-    -fx-text-fill: white;
+    -fx-background-color: #8b6914;
+    -fx-text-fill: #f0e6d4;
 }
 
 .copilot-send-button:hover {
-    -fx-background-color: #1a3a5c;
+    -fx-background-color: #6e5210;
 }
 
 .copilot-stop-button {
@@ -202,4 +310,68 @@
 .copilot-model-selector .text-input {
     -fx-text-fill: #d4d4d4;
     -fx-background-color: rgb(40, 40, 40);
+}
+
+.desk .identity-switch.toggle-button,
+.desk .identity-publish.menu-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #e6dcc8;
+    -fx-background-radius: 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.desk .identity-switch.toggle-button:hover,
+.desk .identity-publish.menu-button:hover,
+.desk .identity-switch.toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: #c4b082;
+    -fx-border-color: #c4b082;
+}
+
+.desk .folio-mark.toggle-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #c5c8cc;
+    -fx-background-radius: 0;
+    -fx-border-width: 0 0 1 0;
+}
+
+.desk .folio-mark.toggle-button:hover,
+.desk .folio-mark.toggle-button:selected {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f0e6d4;
+    -fx-border-color: #c4b082;
+}
+
+.desk .slug.button,
+.desk .slug.menu-button {
+    -fx-background-color: #241f19;
+    -fx-border-color: #3d3429;
+    -fx-text-fill: #d7ccba;
+}
+
+.desk .typecase-slug.toggle-button {
+    -fx-background-color: #231e18;
+    -fx-border-color: #4a3f32;
+    -fx-text-fill: #e8dcc8;
+    -fx-background-radius: 1;
+}
+
+.desk .typecase-slug.toggle-button:hover {
+    -fx-background-color: #3a3228;
+}
+
+.desk .typecase-slug.toggle-button:selected {
+    -fx-background-color: #d4c4a8;
+    -fx-text-fill: #1c1610;
+    -fx-border-color: #d4c4a8;
+}
+
+.desk .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.desk .tab:selected {
+    -fx-background-color: #1c1b19;
 }

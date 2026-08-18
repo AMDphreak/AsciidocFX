@@ -99,7 +99,7 @@ public abstract class ViewPanel extends AnchorPane {
                 .findFirst()
                 .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
                 .orElse(true);
-        String fill = dark ? "#191A1B" : "#F3F3F3";
+        String fill = dark ? "#1c1b19" : "#fbf6ea";
         WebView wv = getWebView();
         wv.setPageFill(Color.web(fill));
         wv.setStyle("-fx-background-color: " + fill + ";");

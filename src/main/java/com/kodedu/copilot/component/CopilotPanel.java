@@ -74,16 +74,14 @@ public class CopilotPanel extends VBox {
     }
 
     private void buildUI() {
-        setSpacing(5);
-        setPadding(new Insets(5));
+        getStyleClass().add("ask-sheet");
+        setSpacing(8);
+        setPadding(new Insets(10, 12, 12, 12));
 
-        // --- Header with title, auth, and logout ---
-        HBox header = new HBox(5);
+        HBox header = new HBox(8);
         header.setAlignment(Pos.CENTER_LEFT);
-        Label titleLabel = new Label("Copilot");
-        titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-        FontIcon copilotIcon = new FontIcon(FontAwesome.COMMENTING);
-        titleLabel.setGraphic(copilotIcon);
+        Label titleLabel = new Label("Ask");
+        titleLabel.getStyleClass().add("ask-title");
 
         authButton = new Button();
         authButton.setGraphic(new FontIcon(FontAwesome.SIGN_IN));
@@ -107,21 +105,21 @@ public class CopilotPanel extends VBox {
 
         MenuButton dockButton = new MenuButton();
         dockButton.setGraphic(new FontIcon(FontAwesome.TH_LARGE));
-        dockButton.setTooltip(new Tooltip("Move Copilot"));
+        dockButton.setTooltip(new Tooltip("Place Ask on the board"));
         dockButton.getStyleClass().add("copilot-auth-button");
         dockButton.getItems().addAll(
-                dockItem("Right of preview", CopilotDock.RIGHT_OF_PREVIEW),
-                dockItem("Left of editor", CopilotDock.LEFT_OF_DOCUMENT),
-                dockItem("Top of workspace", CopilotDock.TOP_OF_WORKSPACE),
-                dockItem("Bottom of window", CopilotDock.BOTTOM_OF_WINDOW),
-                dockItem("Pop-out window", CopilotDock.FLOAT)
+                dockItem("Beside the page", CopilotDock.RIGHT_OF_PREVIEW),
+                dockItem("Before the source", CopilotDock.LEFT_OF_DOCUMENT),
+                dockItem("Above the board", CopilotDock.TOP_OF_WORKSPACE),
+                dockItem("Above the case", CopilotDock.BOTTOM_OF_WINDOW),
+                dockItem("On the desk", CopilotDock.FLOAT)
         );
 
         FontIcon grip = new FontIcon(FontAwesome.ARROWS);
         grip.getStyleClass().add("copilot-drag-grip");
         Label gripLabel = new Label();
         gripLabel.setGraphic(grip);
-        gripLabel.setTooltip(new Tooltip("Drag to dock Copilot"));
+        gripLabel.setTooltip(new Tooltip("Drag onto a stamp"));
         header.getChildren().add(0, gripLabel);
         installDockDrag(header);
 

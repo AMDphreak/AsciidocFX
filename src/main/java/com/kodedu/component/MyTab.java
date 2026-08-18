@@ -59,7 +59,7 @@ public class MyTab extends Tab {
 
     private final Logger logger = LoggerFactory.getLogger(MyTab.class);
 
-    private boolean outlineVisible = true;
+    private boolean outlineVisible = false;
     private boolean previewOnly = false;
 
     @Autowired

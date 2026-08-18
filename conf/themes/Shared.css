@@ -306,142 +306,144 @@
     -fx-icon-color: -fx-text-fill;
 }
 
-.top-chrome .preview-theme-toggle,
-.convert-box .preview-theme-toggle {
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-padding: 4 8;
-    -fx-cursor: hand;
-    -fx-alignment: center;
-    -fx-content-display: graphic-only;
+.desk {
+    -fx-font-family: "Palatino Linotype", Palatino, Georgia, serif;
 }
 
-.top-chrome .preview-theme-toggle .ikonli-font-icon,
-.convert-box .preview-theme-toggle .ikonli-font-icon {
-    -fx-icon-color: -fx-text-fill;
-}
-
-.top-chrome {
+.identity {
     -fx-alignment: CENTER_LEFT;
     -fx-background-color: transparent;
 }
 
-.workspace-stack {
+.wordmark {
+    -fx-font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.identity-path {
+    -fx-font-size: 12px;
+    -fx-opacity: 0.72;
+    -fx-max-width: 420;
+    -fx-text-overrun: ellipsis;
+}
+
+.identity-switch,
+.identity-publish {
     -fx-background-color: transparent;
-}
-
-.workspace-frame {
-    -fx-background-color: derive(-fx-background, 4%);
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-border-color: derive(-fx-text-base-color, 55%);
-    -fx-border-width: 1;
-    -fx-padding: 4;
-}
-
-.pane-editor {
-    -fx-background-color: derive(-fx-background, 10%);
-    -fx-background-radius: 8;
-}
-
-.pane-preview {
-    -fx-background-color: derive(-fx-background, 18%);
-    -fx-background-radius: 8;
-}
-
-.pane-workdir {
-    -fx-background-color: derive(-fx-background, 8%);
-    -fx-background-radius: 8;
-}
-
-.chrome-button {
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-    -fx-border-color: derive(-fx-text-base-color, 40%);
-    -fx-border-width: 1;
-    -fx-padding: 4 10;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: transparent;
+    -fx-padding: 2 2 4 2;
     -fx-cursor: hand;
+    -fx-font-size: 13px;
+}
+
+.identity-switch:hover,
+.identity-publish:hover,
+.identity-switch:selected {
     -fx-background-color: transparent;
 }
 
-.top-chrome .chrome-button.toggle-button,
-.top-chrome .chrome-button.button,
-.top-chrome .chrome-button.menu-button {
-    -fx-background-color: derive(-fx-base, 8%);
-    -fx-border-color: derive(-fx-text-base-color, 25%);
+.identity-publish .arrow-button {
+    -fx-padding: 0 0 0 8;
+}
+
+.board,
+.board-inner {
+    -fx-background-color: transparent;
+}
+
+.sheet {
+    -fx-background-radius: 2;
+    -fx-border-width: 0;
+}
+
+.library-head {
+    -fx-spacing: 8;
+}
+
+.slug {
+    -fx-background-radius: 1;
+    -fx-border-radius: 1;
     -fx-border-width: 1;
+    -fx-padding: 3 8;
+    -fx-cursor: hand;
+    -fx-font-size: 11px;
 }
 
-.nested-toolbar .chrome-button.toggle-button,
-.nested-toolbar .chrome-button.button,
-.nested-toolbar .chrome-button.menu-button,
-.nested-toolbar .chrome-button {
+.folio {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.folio-mark,
+.folio-open {
     -fx-background-color: transparent;
-    -fx-border-color: derive(-fx-text-base-color, 70%);
-    -fx-text-fill: derive(-fx-text-base-color, 15%);
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: transparent;
+    -fx-padding: 1 0 4 0;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
 }
 
-.nested-toolbar .chrome-button .ikonli-font-icon {
-    -fx-icon-color: derive(-fx-text-base-color, 20%);
+.folio-open {
+    -fx-padding: 1 2 4 2;
 }
 
-.convert-box .preview-theme-toggle {
-    -fx-opacity: 0.78;
-    -fx-border-color: derive(-fx-text-base-color, 75%);
+.typecase {
+    -fx-alignment: CENTER_LEFT;
 }
 
-.chrome-button:hover,
-.chrome-button:selected,
-.chrome-button:armed {
-    -fx-background-color: derive(-fx-base, 18%);
+.typecase-slug {
+    -fx-background-radius: 1;
+    -fx-border-radius: 1;
+    -fx-border-width: 1;
+    -fx-padding: 6 12;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+    -fx-font-family: "Palatino Linotype", Palatino, Georgia, serif;
 }
 
-.top-chrome .chrome-button:hover,
-.top-chrome .chrome-button:selected {
-    -fx-background-color: derive(-fx-base, 16%);
-    -fx-border-color: derive(-fx-text-base-color, 10%);
+.typecase-status {
+    -fx-opacity: 0.85;
 }
 
-.nested-toolbar .chrome-button:hover,
-.nested-toolbar .chrome-button:selected {
-    -fx-background-color: derive(-fx-base, 10%);
-    -fx-border-color: derive(-fx-text-base-color, 55%);
+.manuscript-tabs,
+.map-tabs {
+    -fx-min-width: 0;
 }
 
+.desk-stamp-overlay,
 .copilot-drop-overlay {
     -fx-background-color: transparent;
 }
 
+.desk-stamp,
 .copilot-drop-zone {
-    -fx-background-color: rgba(70, 130, 210, 0.16);
-    -fx-border-color: rgba(120, 170, 255, 0.4);
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    -fx-border-width: 1;
-    -fx-border-style: dashed;
+    -fx-background-radius: 1;
+    -fx-border-radius: 1;
+    -fx-border-width: 2;
+    -fx-padding: 8;
 }
 
-.copilot-drop-zone.active {
-    -fx-background-color: rgba(70, 130, 210, 0.4);
-    -fx-border-color: rgba(160, 200, 255, 0.85);
-    -fx-border-style: solid;
-}
-
+.desk-stamp .label,
 .copilot-drop-zone .label {
-    -fx-text-fill: -fx-text-base-color;
+    -fx-font-family: "Palatino Linotype", Palatino, Georgia, serif;
     -fx-font-weight: bold;
+    -fx-font-size: 13px;
 }
 
-.mode-segment {
-    -fx-background-radius: 6;
+.ask-sheet {
+    -fx-padding: 10;
 }
 
-.document-chrome {
-    -fx-spacing: 6;
-}
-
-.document-nav-tabs {
-    -fx-min-width: 0;
+.ask-title {
+    -fx-font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
 }
 
 .export-menu .output-button.pdf,

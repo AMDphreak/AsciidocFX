@@ -3,521 +3,344 @@
 <?import com.kodedu.component.ShowerHider?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.layout.*?>
-<?import org.kordamp.ikonli.javafx.*?>
-<AnchorPane id="AnchorPane" fx:id="rootAnchor" styleClass="root-container"
+<AnchorPane id="AnchorPane" fx:id="rootAnchor" styleClass="root-container,desk"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kodedu.controller.ApplicationController"
             xmlns="http://javafx.com/javafx/8">
     <children>
         <BorderPane AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
-                    AnchorPane.topAnchor="0">
+                    AnchorPane.topAnchor="0" styleClass="desk">
             <right>
                 <VBox fx:id="rightTooglesBox" managed="false" visible="false" prefWidth="0"/>
             </right>
-            <bottom>
-                <HBox prefHeight="20.0">
-                    <Pane prefWidth="20"></Pane>
-                    <ToggleButton styleClass="corner-toggle-button,corner-right-half"
-                                  fx:id="terminalToggleButton"
-                                  onAction="#toggleTerminalView"
-                                  prefHeight="20">
-                        <toggleGroup>
-                            <ToggleGroup fx:id="bottomToggleGroup"/>
-                        </toggleGroup>
-                        <graphic>
-                            <Group>
-                                <Label text="Terminal"></Label>
-                            </Group>
-                        </graphic>
-                        <padding>
-                            <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                        </padding>
-                    </ToggleButton>
-                    <ToggleButton toggleGroup="$bottomToggleGroup" styleClass="corner-toggle-button,corner-right-half"
-                                  fx:id="logToggleButton"
-                                  onAction="#toggleLogView" prefHeight="20">
-
-                        <graphic>
-                            <Group>
-                                <Label text="Events"></Label>
-                            </Group>
-                        </graphic>
-                        <padding>
-                            <Insets bottom="0" top="0" left="0" right="0"></Insets>
-                        </padding>
-                    </ToggleButton>
-                    <HBox HBox.hgrow="ALWAYS" fx:id="statusBox" alignment="CENTER_LEFT" spacing="3">
-                        <children>
-                            <Label id="showHideLogs"/>
-                            <Label fx:id="statusMessage"/>
-                            <Pane HBox.hgrow="ALWAYS"/>
-                            <Label fx:id="statusText"/>
-                        </children>
-                    </HBox>
-                    <Pane prefWidth="20"></Pane>
-                </HBox>
-            </bottom>
             <left>
                 <Pane managed="false" visible="false" prefWidth="0"/>
             </left>
-            <center>
-                <StackPane fx:id="workspaceStack" styleClass="workspace-stack">
+            <top>
+                <HBox alignment="CENTER_LEFT" spacing="16" styleClass="identity">
                     <padding>
-                        <Insets bottom="6.0" left="8.0" right="8.0" top="0.0"/>
+                        <Insets bottom="10.0" left="22.0" right="22.0" top="12.0"/>
                     </padding>
                     <children>
-                        <StackPane fx:id="workspaceFrame" styleClass="workspace-frame">
+                        <Label styleClass="wordmark" text="COMPOSING"/>
+                        <Label fx:id="workingDirButton" styleClass="identity-path" text=""/>
+                        <Pane HBox.hgrow="ALWAYS"/>
+                        <ToggleButton fx:id="appThemeToggle" mnemonicParsing="false" styleClass="identity-switch"
+                                      text="Night">
+                            <tooltip>
+                                <Tooltip text="Night or day for the application"/>
+                            </tooltip>
+                        </ToggleButton>
+                        <MenuButton fx:id="exportMenu" mnemonicParsing="false" styleClass="identity-publish" text="Publish"/>
+                        <ToggleButton fx:id="toggleConfigButton" mnemonicParsing="false" onAction="#toggleConfigurationView"
+                                      styleClass="identity-switch" text="Prefs"/>
+                    </children>
+                </HBox>
+            </top>
+            <center>
+                <StackPane fx:id="workspaceStack" styleClass="board">
+                    <padding>
+                        <Insets bottom="0.0" left="18.0" right="18.0" top="0.0"/>
+                    </padding>
+                    <children>
+                        <StackPane fx:id="workspaceFrame" styleClass="board-inner">
                             <children>
-                <SplitPane fx:id="mainVerticalSplitPane" id="mainVerticalSplitPane" dividerPositions="1.0"
-                           orientation="VERTICAL">
-                    <items>
-                        <SplitPane id="splitPane" fx:id="splitPane" dividerPositions="0.5, 0.5">
-                            <items>
-                                <VBox minWidth="0.0" styleClass="pane-workdir" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                    <children>
-                                        <FlowPane hgap="5" vgap="5" styleClass="nested-toolbar,workdir-toolbar">
-                                            <children>
-                                                <Button fx:id="changeWorkingDir" minWidth="-Infinity"
-                                                        mnemonicParsing="false" onAction="#changeWorkingDir" text=""
-                                                        HBox.hgrow="NEVER">
-                                                    <graphic>
-                                                        <Label fx:id="workingDirButton" minWidth="-Infinity"
-                                                               mnemonicParsing="false" text="">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-folder-open-o"/>
-                                                            </graphic>
-                                                        </Label>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Change Workdir"/>
-                                                    </tooltip>
-                                                </Button>
-                                                <Button minWidth="-Infinity" mnemonicParsing="false" onAction="#goUp"
-                                                        text="">
-                                                    <graphic>
-                                                        <Label fx:id="goUpLabel" text="">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-level-up"/>
-                                                            </graphic>
-                                                        </Label>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Go Up"/>
-                                                    </tooltip>
-                                                </Button>
-                                                <Button minWidth="-Infinity" mnemonicParsing="false"
-                                                        onAction="#refreshWorkingDir" text="">
-                                                    <graphic>
-                                                        <Label fx:id="refreshLabel" text="">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-refresh"/>
-                                                            </graphic>
-                                                        </Label>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Refresh"/>
-                                                    </tooltip>
-                                                </Button>
-                                                <MenuButton fx:id="leftButton" minWidth="-Infinity"
-                                                            mnemonicParsing="false" text="" HBox.hgrow="NEVER">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-ellipsis-h"/>
-                                                    </graphic>
-                                                    <items>
-                                                        <MenuItem mnemonicParsing="false" onAction="#bugReport"
-                                                                  text="Bug Report"/>
-                                                        <MenuItem mnemonicParsing="false" onAction="#openCommunityForum"
-                                                                  text="Community Forum"/>
-                                                        <MenuItem mnemonicParsing="false" onAction="#openGitterChat"
-                                                                  text="Gitter Chat"/>
-                                                        <SeparatorMenuItem/>
-                                                        <MenuItem mnemonicParsing="false" onAction="#openGithubPage"
-                                                                  text="Github Page"/>
-                                                        <MenuItem fx:id="afxVersionItem" disable="true"
-                                                                  mnemonicParsing="false" text=""/>
-                                                    </items>
-                                                    <HBox.margin>
-                                                        <Insets/>
-                                                    </HBox.margin>
-                                                </MenuButton>
-                                            </children>
-                                            <padding>
-                                                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
-                                            </padding>
-                                        </FlowPane>
-                                        <StackPane VBox.vgrow="ALWAYS">
-                                            <children>
-                                                <ShowerHider fx:id="leftShowerHider" VBox.vgrow="ALWAYS">
-                                                    <master>
-                                                        <TreeView fx:id="fileSystemView" showRoot="true">
-                                                            <contextMenu>
-                                                                <ContextMenu>
+                                <SplitPane fx:id="mainVerticalSplitPane" dividerPositions="1.0" orientation="VERTICAL">
+                                    <items>
+                                        <SplitPane fx:id="splitPane" dividerPositions="0.0, 0.52">
+                                            <items>
+                                                <VBox minWidth="0.0" styleClass="library">
+                                                    <children>
+                                                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="library-head">
+                                                            <padding>
+                                                                <Insets bottom="8.0" left="10.0" right="10.0" top="10.0"/>
+                                                            </padding>
+                                                            <children>
+                                                                <Button fx:id="changeWorkingDir" mnemonicParsing="false"
+                                                                        onAction="#changeWorkingDir" styleClass="slug"
+                                                                        text="Folder"/>
+                                                                <Button mnemonicParsing="false" onAction="#goUp"
+                                                                        styleClass="slug" text="Up">
+                                                                    <graphic>
+                                                                        <Label fx:id="goUpLabel" visible="false"/>
+                                                                    </graphic>
+                                                                </Button>
+                                                                <Button mnemonicParsing="false" onAction="#refreshWorkingDir"
+                                                                        styleClass="slug" text="Reload">
+                                                                    <graphic>
+                                                                        <Label fx:id="refreshLabel" visible="false"/>
+                                                                    </graphic>
+                                                                </Button>
+                                                                <Pane HBox.hgrow="ALWAYS"/>
+                                                                <MenuButton fx:id="leftButton" mnemonicParsing="false"
+                                                                            styleClass="slug" text="More">
                                                                     <items>
-                                                                        <MenuItem fx:id="openFileTreeItem"
-                                                                                  mnemonicParsing="false" text="Open"/>
-                                                                        <MenuItem onAction="#refreshFileView"
-                                                                                  mnemonicParsing="false" text="Refresh"/>
-                                                                        <MenuItem id="openFolderTreeItem"
-                                                                                  fx:id="browseFolderTreeItem"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Browse"/>
-                                                                        <SeparatorMenuItem fx:id="renameSeparator"/>
-                                                                        <MenuItem fx:id="renameFile"
-                                                                                  mnemonicParsing="false"
-                                                                                  onAction="#renameFile" text="Rename"/>
-                                                                        <Menu fx:id="newMenu" text="New">
-                                                                            <items>
-                                                                                <MenuItem fx:id="newFile"
-                                                                                          mnemonicParsing="false"
-                                                                                          onAction="#createFile"
-                                                                                          text="New File"/>
-                                                                                <MenuItem fx:id="newFolder"
-                                                                                          mnemonicParsing="false"
-                                                                                          onAction="#createFolder"
-                                                                                          text="New Folder"/>
-                                                                            </items>
-                                                                        </Menu>
-                                                                        <Menu fx:id="menuTemplates" text="New Template"
-                                                                              mnemonicParsing="false">
-                                                                        </Menu>
-                                                                        <SeparatorMenuItem/>
+                                                                        <MenuItem mnemonicParsing="false" onAction="#bugReport"
+                                                                                  text="Bug Report"/>
                                                                         <MenuItem mnemonicParsing="false"
-                                                                                  onAction="#copyPath"
-                                                                                  text="Copy Path"/>
-                                                                        <MenuItem fx:id="copyTreeItem"
-                                                                                  mnemonicParsing="false" text="Copy"/>
-                                                                        <SeparatorMenuItem fx:id="addToFavSeparator"/>
-                                                                        <MenuItem fx:id="addToFavoriteDir"
-                                                                                  onAction="#addToFavoriteDir"
-                                                                                  text="Add to Fav. Dirs"/>
-                                                                        <Menu fx:id="favoriteDirMenu"
-                                                                              text="Favorite Dirs"/>
+                                                                                  onAction="#openCommunityForum"
+                                                                                  text="Community Forum"/>
+                                                                        <MenuItem mnemonicParsing="false" onAction="#openGitterChat"
+                                                                                  text="Gitter Chat"/>
                                                                         <SeparatorMenuItem/>
-                                                                        <CheckMenuItem fx:id="showHiddenFiles"
-                                                                                       onAction="#showHiddenFiles"
-                                                                                       text="Show hidden files"/>
-                                                                        <SeparatorMenuItem/>
-                                                                        <MenuItem onAction="#openTerminalItem"
-                                                                                  text="Open in Terminal"/>
-                                                                        <SeparatorMenuItem/>
-                                                                        <MenuItem fx:id="deletePathItem"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Delete"/>
-                                                                        <SeparatorMenuItem/>
-                                                                        <MenuItem
-                                                                                  onAction="#showFileHistory"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Show History"/>
+                                                                        <MenuItem mnemonicParsing="false" onAction="#openGithubPage"
+                                                                                  text="Github Page"/>
+                                                                        <MenuItem fx:id="afxVersionItem" disable="true"
+                                                                                  mnemonicParsing="false" text=""/>
                                                                     </items>
-                                                                </ContextMenu>
-                                                            </contextMenu>
-                                                        </TreeView>
-                                                    </master>
-                                                    <slaves>
-                                                        <ListView id="recetListView" fx:id="recentListView"
-                                                                  styleClass="recentListView">
-                                                            <contextMenu>
-                                                                <ContextMenu>
-                                                                    <items>
-                                                                        <MenuItem fx:id="openFileListItem"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Open"/>
-                                                                        <MenuItem fx:id="browseFolderListItem"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Browse"/>
-                                                                        <MenuItem fx:id="copyPathListItem"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Copy Path"/>
-                                                                        <MenuItem fx:id="copyListItem"
-                                                                                  mnemonicParsing="false"
-                                                                                  text="Copy"/>
-                                                                    </items>
-                                                                </ContextMenu>
-                                                            </contextMenu>
-                                                        </ListView>
-                                                    </slaves>
-                                                </ShowerHider>
-                                                <Label fx:id="basicSearch" text="" StackPane.alignment="TOP_RIGHT"
-                                                       styleClass="basic-search">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-search"/>
-                                                    </graphic>
-                                                    <StackPane.margin>
-                                                        <Insets left="5.0" right="10.0"/>
-                                                    </StackPane.margin>
-                                                </Label>
-                                            </children>
-                                        </StackPane>
-                                    </children>
-                                </VBox>
-                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.22" minWidth="0" styleClass="pane-editor">
-                                    <items>
-                                        <TabPane fx:id="documentNavTabs" minWidth="0" tabClosingPolicy="UNAVAILABLE"
-                                                 styleClass="document-nav-tabs">
-                                            <tabs>
-                                                <Tab closable="false" text="Outline">
-                                                    <content>
-                                                        <TreeView fx:id="outlineTreeView"/>
-                                                    </content>
-                                                </Tab>
-                                                <Tab closable="false" text="References">
-                                                    <content>
-                                                        <TreeTableView fx:id="refTreeTableView" showRoot="false"/>
-                                                    </content>
-                                                </Tab>
-                                            </tabs>
-                                        </TabPane>
-                                <SplitPane fx:id="editorSplitPane" orientation="VERTICAL">
-                                    <items>
-                                        <VBox minHeight="0" minWidth="0">
-                                            <children>
-                                                <HBox alignment="CENTER_LEFT" spacing="6" styleClass="nested-toolbar,document-chrome">
-                                                    <padding>
-                                                        <Insets bottom="4.0" left="6.0" right="6.0" top="4.0"/>
-                                                    </padding>
-                                                    <children>
-                                                        <ToggleButton fx:id="outlineToggle" mnemonicParsing="false"
-                                                                      onAction="#toggleOutlineView" selected="true"
-                                                                      styleClass="chrome-button" text="Outline">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-list"/>
-                                                            </graphic>
-                                                        </ToggleButton>
+                                                                </MenuButton>
+                                                            </children>
+                                                        </HBox>
+                                                        <StackPane VBox.vgrow="ALWAYS">
+                                                            <children>
+                                                                <ShowerHider fx:id="leftShowerHider" VBox.vgrow="ALWAYS">
+                                                                    <master>
+                                                                        <TreeView fx:id="fileSystemView" showRoot="true">
+                                                                            <contextMenu>
+                                                                                <ContextMenu>
+                                                                                    <items>
+                                                                                        <MenuItem fx:id="openFileTreeItem"
+                                                                                                  mnemonicParsing="false" text="Open"/>
+                                                                                        <MenuItem onAction="#refreshFileView"
+                                                                                                  mnemonicParsing="false"
+                                                                                                  text="Refresh"/>
+                                                                                        <MenuItem fx:id="browseFolderTreeItem"
+                                                                                                  mnemonicParsing="false"
+                                                                                                  text="Browse"/>
+                                                                                        <SeparatorMenuItem fx:id="renameSeparator"/>
+                                                                                        <MenuItem fx:id="renameFile"
+                                                                                                  mnemonicParsing="false"
+                                                                                                  onAction="#renameFile" text="Rename"/>
+                                                                                        <Menu fx:id="newMenu" text="New">
+                                                                                            <items>
+                                                                                                <MenuItem fx:id="newFile"
+                                                                                                          mnemonicParsing="false"
+                                                                                                          onAction="#createFile"
+                                                                                                          text="New File"/>
+                                                                                                <MenuItem fx:id="newFolder"
+                                                                                                          mnemonicParsing="false"
+                                                                                                          onAction="#createFolder"
+                                                                                                          text="New Folder"/>
+                                                                                            </items>
+                                                                                        </Menu>
+                                                                                        <Menu fx:id="menuTemplates" mnemonicParsing="false"
+                                                                                              text="New Template"/>
+                                                                                        <SeparatorMenuItem/>
+                                                                                        <MenuItem mnemonicParsing="false"
+                                                                                                  onAction="#copyPath" text="Copy Path"/>
+                                                                                        <MenuItem fx:id="copyTreeItem"
+                                                                                                  mnemonicParsing="false" text="Copy"/>
+                                                                                        <SeparatorMenuItem fx:id="addToFavSeparator"/>
+                                                                                        <MenuItem fx:id="addToFavoriteDir"
+                                                                                                  onAction="#addToFavoriteDir"
+                                                                                                  text="Add to Fav. Dirs"/>
+                                                                                        <Menu fx:id="favoriteDirMenu" text="Favorite Dirs"/>
+                                                                                        <SeparatorMenuItem/>
+                                                                                        <CheckMenuItem fx:id="showHiddenFiles"
+                                                                                                       onAction="#showHiddenFiles"
+                                                                                                       text="Show hidden files"/>
+                                                                                        <SeparatorMenuItem/>
+                                                                                        <MenuItem onAction="#openTerminalItem"
+                                                                                                  text="Open in Terminal"/>
+                                                                                        <SeparatorMenuItem/>
+                                                                                        <MenuItem fx:id="deletePathItem"
+                                                                                                  mnemonicParsing="false" text="Delete"/>
+                                                                                        <SeparatorMenuItem/>
+                                                                                        <MenuItem onAction="#showFileHistory"
+                                                                                                  mnemonicParsing="false"
+                                                                                                  text="Show History"/>
+                                                                                    </items>
+                                                                                </ContextMenu>
+                                                                            </contextMenu>
+                                                                        </TreeView>
+                                                                    </master>
+                                                                    <slaves>
+                                                                        <ListView fx:id="recentListView" id="recetListView"
+                                                                                  styleClass="recentListView">
+                                                                            <contextMenu>
+                                                                                <ContextMenu>
+                                                                                    <items>
+                                                                                        <MenuItem fx:id="openFileListItem"
+                                                                                                  mnemonicParsing="false" text="Open"/>
+                                                                                        <MenuItem fx:id="browseFolderListItem"
+                                                                                                  mnemonicParsing="false" text="Browse"/>
+                                                                                        <MenuItem fx:id="copyPathListItem"
+                                                                                                  mnemonicParsing="false"
+                                                                                                  text="Copy Path"/>
+                                                                                        <MenuItem fx:id="copyListItem"
+                                                                                                  mnemonicParsing="false" text="Copy"/>
+                                                                                    </items>
+                                                                                </ContextMenu>
+                                                                            </contextMenu>
+                                                                        </ListView>
+                                                                    </slaves>
+                                                                </ShowerHider>
+                                                                <Label fx:id="basicSearch" text="" StackPane.alignment="TOP_RIGHT"
+                                                                       styleClass="basic-search">
+                                                                    <StackPane.margin>
+                                                                        <Insets left="5.0" right="10.0"/>
+                                                                    </StackPane.margin>
+                                                                </Label>
+                                                            </children>
+                                                        </StackPane>
                                                     </children>
-                                                </HBox>
-                                                <TabPane fx:id="tabPane" minHeight="0" minWidth="0"
-                                                         styleClass="floating"
-                                                         tabClosingPolicy="ALL_TABS" AnchorPane.bottomAnchor="0.0"
-                                                         AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                                                         AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS"/>
-
-                                            </children>
-                                        </VBox>
-                                    </items>
-                                </SplitPane>
-                                    </items>
-                                </SplitPane>
-                                <VBox fx:id="previewBox" minWidth="0" styleClass="preview-box,pane-preview" AnchorPane.bottomAnchor="0.0"
-                                      AnchorPane.leftAnchor="0.0"
-                                      AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                    <children>
-                                        <HBox styleClass="menu-hbox, convert-box, nested-toolbar">
-                                            <children>
-                                                <FlowPane hgap="10" prefWidth="-1.0" vgap="5">
+                                                </VBox>
+                                                <SplitPane fx:id="documentSplitPane" dividerPositions="0.0" minWidth="0"
+                                                           styleClass="sheet,sheet-source">
+                                                    <items>
+                                                        <TabPane fx:id="documentNavTabs" minWidth="0"
+                                                                 tabClosingPolicy="UNAVAILABLE" styleClass="map-tabs">
+                                                            <tabs>
+                                                                <Tab closable="false" text="Map">
+                                                                    <content>
+                                                                        <TreeView fx:id="outlineTreeView"/>
+                                                                    </content>
+                                                                </Tab>
+                                                                <Tab closable="false" text="Xrefs">
+                                                                    <content>
+                                                                        <TreeTableView fx:id="refTreeTableView" showRoot="false"/>
+                                                                    </content>
+                                                                </Tab>
+                                                            </tabs>
+                                                        </TabPane>
+                                                        <SplitPane fx:id="editorSplitPane" orientation="VERTICAL">
+                                                            <items>
+                                                                <VBox minHeight="0" minWidth="0">
+                                                                    <children>
+                                                                        <TabPane fx:id="tabPane" minHeight="0" minWidth="0"
+                                                                                 styleClass="manuscript-tabs"
+                                                                                 tabClosingPolicy="ALL_TABS"
+                                                                                 VBox.vgrow="ALWAYS"/>
+                                                                    </children>
+                                                                </VBox>
+                                                            </items>
+                                                        </SplitPane>
+                                                    </items>
+                                                </SplitPane>
+                                                <VBox fx:id="previewBox" minWidth="0" styleClass="sheet,sheet-page">
                                                     <children>
-                                                        <ProgressIndicator fx:id="indikator" managed="false"
-                                                                           maxHeight="20.0"
-                                                                           maxWidth="20.0" minHeight="20.0"
-                                                                           minWidth="20.0"
-                                                                           prefHeight="20.0" prefWidth="20.0"
-                                                                           progress="-1.0"
-                                                                           visible="false"/>
-                                                        <MenuButton fx:id="exportMenu" mnemonicParsing="false"
-                                                                    styleClass="chrome-button,export-menu" text="Export">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-download"/>
-                                                            </graphic>
-                                                        </MenuButton>
-                                                        <Label fx:id="htmlPro" managed="false" minWidth="-Infinity"
-                                                               styleClass="output-button,html" visible="false" text="HTML">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-html5"/>
-                                                            </graphic>
-                                                        </Label>
-                                                        <Label fx:id="pdfPro" managed="false" minWidth="-Infinity"
-                                                               styleClass="output-button,pdf" visible="false" text="PDF">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-file-pdf-o"/>
-                                                            </graphic>
-                                                        </Label>
-                                                        <Label fx:id="ebookPro" managed="false" minWidth="-Infinity"
-                                                               styleClass="output-button,ebook" visible="false" text="Ebook">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-book"/>
-                                                            </graphic>
-                                                        </Label>
-                                                        <Label fx:id="docbookPro" managed="false" minWidth="-Infinity"
-                                                               styleClass="output-button,docbook" visible="false" text="Docbook">
-                                                            <graphic>
-                                                                <FontIcon iconLiteral="fa-file-word-o"/>
-                                                            </graphic>
-                                                        </Label>
+                                                        <HBox alignment="CENTER_LEFT" spacing="14" styleClass="folio">
+                                                            <padding>
+                                                                <Insets bottom="10.0" left="16.0" right="16.0" top="10.0"/>
+                                                            </padding>
+                                                            <children>
+                                                                <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
+                                                                              onAction="#togglePreviewView" selected="true"
+                                                                              styleClass="folio-mark" text="Spread">
+                                                                    <toggleGroup>
+                                                                        <ToggleGroup fx:id="rightToggleGroup"/>
+                                                                    </toggleGroup>
+                                                                </ToggleButton>
+                                                                <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
+                                                                              onAction="#toggleZenMode"
+                                                                              styleClass="folio-mark" text="Galley"
+                                                                              toggleGroup="$rightToggleGroup"/>
+                                                                <Pane HBox.hgrow="ALWAYS"/>
+                                                                <ProgressIndicator fx:id="indikator" managed="false"
+                                                                                   maxHeight="16.0" maxWidth="16.0"
+                                                                                   minHeight="16.0" minWidth="16.0"
+                                                                                   prefHeight="16.0" prefWidth="16.0"
+                                                                                   progress="-1.0" visible="false"/>
+                                                                <ToggleButton fx:id="previewDarkToggle" mnemonicParsing="false"
+                                                                              styleClass="folio-mark" text="Ink">
+                                                                    <tooltip>
+                                                                        <Tooltip text="Ink or paper for the rendered page. Browser opens light unless you choose Open dark."/>
+                                                                    </tooltip>
+                                                                </ToggleButton>
+                                                                <Label fx:id="browserPro" styleClass="folio-open" text="Open">
+                                                                    <tooltip>
+                                                                        <Tooltip text="Open the rendered page in a browser"/>
+                                                                    </tooltip>
+                                                                </Label>
+                                                                <Label fx:id="htmlPro" managed="false" visible="false" text="HTML"/>
+                                                                <Label fx:id="pdfPro" managed="false" visible="false" text="PDF"/>
+                                                                <Label fx:id="ebookPro" managed="false" visible="false" text="Ebook"/>
+                                                                <Label fx:id="docbookPro" managed="false" visible="false"
+                                                                       text="Docbook"/>
+                                                            </children>
+                                                        </HBox>
+                                                        <ProgressBar fx:id="progressBar" managed="false" visible="false"/>
+                                                        <ShowerHider fx:id="rightShowerHider" VBox.vgrow="ALWAYS">
+                                                            <master>
+                                                            </master>
+                                                            <slaves>
+                                                                <VBox fx:id="configBox" spacing="5" VBox.vgrow="ALWAYS"/>
+                                                            </slaves>
+                                                        </ShowerHider>
                                                     </children>
-                                                </FlowPane>
-                                                <Pane maxWidth="1.7976931348623157E308" prefHeight="1.0" prefWidth="1.0"
-                                                      HBox.hgrow="ALWAYS">
-                                                    <HBox.margin>
-                                                        <Insets/>
-                                                    </HBox.margin>
-                                                </Pane>
-                                                <HBox alignment="CENTER_RIGHT" spacing="8">
-                                                <ToggleButton fx:id="previewSplitToggle" mnemonicParsing="false"
-                                                              onAction="#togglePreviewView" selected="true"
-                                                              styleClass="chrome-button,mode-segment" text="Preview">
-                                                    <toggleGroup>
-                                                        <ToggleGroup fx:id="rightToggleGroup"/>
-                                                    </toggleGroup>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleZenButton" mnemonicParsing="false"
-                                                              onAction="#toggleZenMode"
-                                                              styleClass="chrome-button,mode-segment"
-                                                              text="Preview Only"
-                                                              toggleGroup="$rightToggleGroup"/>
-                                                <ToggleButton fx:id="previewDarkToggle" alignment="CENTER"
-                                                              contentDisplay="GRAPHIC_ONLY"
-                                                              focusTraversable="false"
-                                                              minHeight="26.0" minWidth="28.0"
-                                                              mnemonicParsing="false" text=""
-                                                              styleClass="chrome-button,preview-theme-toggle">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-moon-o"/>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Dark or light document preview. Browser stays light unless you choose Open dark."/>
-                                                    </tooltip>
-                                                </ToggleButton>
-                                                <Label fx:id="browserPro" alignment="CENTER" contentDisplay="RIGHT"
-                                                       minWidth="-Infinity"
-                                                       styleClass="output-button,browser,chrome-button" text="Open in Browser"
-                                                       textAlignment="LEFT">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-external-link"/>
-                                                    </graphic>
-                                                </Label>
-                                                </HBox>
-                                            </children>
-                                            <padding>
-                                                <Insets bottom="5.0" left="15.0" right="15.0" top="5.0"/>
-                                            </padding>
-                                        </HBox>
-                                        <ProgressBar fx:id="progressBar" managed="false" visible="false"/>
-                                        <ShowerHider fx:id="rightShowerHider" VBox.vgrow="ALWAYS">
+                                                </VBox>
+                                            </items>
+                                        </SplitPane>
+                                        <ShowerHider minHeight="0" fx:id="bottomShowerHider">
                                             <master>
-                                                <!--Preview ViewPanels will be add runtime-->
+                                                <VBox fx:id="logVBox" minHeight="0" spacing="3"/>
                                             </master>
                                             <slaves>
-                                                <VBox fx:id="configBox" spacing="5" VBox.vgrow="ALWAYS"></VBox>
+                                                <HBox fx:id="terminalHBox" minHeight="0">
+                                                    <children>
+                                                        <VBox fx:id="terminalLeftBox" minHeight="0" spacing="5"
+                                                              styleClass="shell-tools">
+                                                            <children>
+                                                                <Button fx:id="newTerminalButton" focusTraversable="false"
+                                                                        styleClass="slug" text="New"/>
+                                                                <Button fx:id="closeTerminalButton" focusTraversable="false"
+                                                                        styleClass="slug" text="Close"/>
+                                                                <Button fx:id="recordTerminalButton" focusTraversable="false"
+                                                                        styleClass="slug" text="Record"/>
+                                                            </children>
+                                                        </VBox>
+                                                        <TabPane fx:id="terminalTabPane" focusTraversable="false" minHeight="0"
+                                                                 styleClass="floating terminal-tab-pane"
+                                                                 tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS"/>
+                                                    </children>
+                                                </HBox>
                                             </slaves>
                                         </ShowerHider>
-                                    </children>
-                                </VBox>
-                            </items>
-                        </SplitPane>
-                        <ShowerHider minHeight="0" fx:id="bottomShowerHider">
-                            <master>
-                                <VBox fx:id="logVBox" minHeight="0" spacing="3">
-
-                                </VBox>
-                            </master>
-                            <slaves>
-                                <HBox fx:id="terminalHBox" minHeight="0">
-                                    <children>
-                                        <VBox fx:id="terminalLeftBox" styleClass="terminal-left-box" minHeight="0"
-                                              spacing="5">
-                                            <children>
-                                                <Button fx:id="newTerminalButton" focusTraversable="false">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-plus"/>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="New Terminal"/>
-                                                    </tooltip>
-                                                </Button>
-                                                <Button fx:id="closeTerminalButton" focusTraversable="false">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-close"/>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Close Terminal"/>
-                                                    </tooltip>
-                                                </Button>
-                                                <Button fx:id="recordTerminalButton" focusTraversable="false">
-                                                    <graphic>
-                                                        <FontIcon iconLiteral="fa-play-circle"/>
-                                                    </graphic>
-                                                    <tooltip>
-                                                        <Tooltip text="Record"/>
-                                                    </tooltip>
-                                                </Button>
-                                            </children>
-                                        </VBox>
-                                        <TabPane fx:id="terminalTabPane" focusTraversable="false" minHeight="0"
-                                                 styleClass="floating terminal-tab-pane" tabClosingPolicy="UNAVAILABLE"
-                                                 HBox.hgrow="ALWAYS"/>
-                                    </children>
-                                </HBox>
-                            </slaves>
-                        </ShowerHider>
-                    </items>
-                </SplitPane>
+                                    </items>
+                                </SplitPane>
                             </children>
                         </StackPane>
                     </children>
                 </StackPane>
             </center>
-            <top>
-                <HBox fx:id="topChromeBar" alignment="CENTER_LEFT" spacing="8" styleClass="top-chrome">
+            <bottom>
+                <HBox alignment="CENTER_LEFT" spacing="0" styleClass="typecase">
                     <padding>
-                        <Insets bottom="6.0" left="8.0" right="8.0" top="6.0"/>
+                        <Insets bottom="8.0" left="10.0" right="16.0" top="8.0"/>
                     </padding>
                     <children>
-                        <ToggleButton fx:id="workdirToggle" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-                                      onAction="#toggleWorkdirView" selected="true" styleClass="chrome-button">
-                            <toggleGroup>
-                                <ToggleGroup fx:id="leftToggleGroup"/>
-                            </toggleGroup>
-                            <graphic>
-                                <FontIcon iconLiteral="fa-folder-open-o"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Workdir"/>
-                            </tooltip>
-                        </ToggleButton>
+                        <ToggleButton fx:id="workdirToggle" mnemonicParsing="false" onAction="#toggleWorkdirView"
+                                      styleClass="typecase-slug" text="Library"/>
                         <ToggleButton fx:id="recentToggle" mnemonicParsing="false" onAction="#toggleRecentView"
-                                      styleClass="chrome-button" text="Recent" toggleGroup="$leftToggleGroup">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-clock-o"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Recent files"/>
-                            </tooltip>
-                        </ToggleButton>
+                                      styleClass="typecase-slug" text="Recents"/>
+                        <ToggleButton fx:id="outlineToggle" mnemonicParsing="false" onAction="#toggleOutlineView"
+                                      styleClass="typecase-slug" text="Map"/>
+                        <ToggleButton fx:id="xrefToggle" mnemonicParsing="false" onAction="#toggleXrefView"
+                                      styleClass="typecase-slug" text="Xrefs"/>
                         <ToggleButton fx:id="toggleCopilotButton" mnemonicParsing="false" onAction="#toggleCopilotView"
-                                      styleClass="chrome-button" text="Copilot">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-commenting"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Copilot (workspace chat — drag the panel header to dock)"/>
-                            </tooltip>
+                                      styleClass="typecase-slug" text="Ask"/>
+                        <ToggleButton fx:id="terminalToggleButton" mnemonicParsing="false" onAction="#toggleTerminalView"
+                                      styleClass="typecase-slug" text="Shell">
+                            <toggleGroup>
+                                <ToggleGroup fx:id="bottomToggleGroup"/>
+                            </toggleGroup>
                         </ToggleButton>
-                        <Pane HBox.hgrow="ALWAYS"/>
-                        <ToggleButton fx:id="appThemeToggle" alignment="CENTER" contentDisplay="GRAPHIC_ONLY"
-                                      focusTraversable="false" minHeight="28.0" minWidth="32.0" mnemonicParsing="false"
-                                      prefHeight="28.0" prefWidth="32.0" styleClass="chrome-button,preview-theme-toggle"
-                                      text="">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-moon-o"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Dark or light application theme"/>
-                            </tooltip>
-                        </ToggleButton>
-                        <ToggleButton fx:id="toggleConfigButton" contentDisplay="GRAPHIC_ONLY" mnemonicParsing="false"
-                                      onAction="#toggleConfigurationView" styleClass="chrome-button">
-                            <graphic>
-                                <FontIcon iconLiteral="fa-cog"/>
-                            </graphic>
-                            <tooltip>
-                                <Tooltip text="Settings"/>
-                            </tooltip>
-                        </ToggleButton>
+                        <ToggleButton fx:id="logToggleButton" mnemonicParsing="false" onAction="#toggleLogView"
+                                      styleClass="typecase-slug" text="Log" toggleGroup="$bottomToggleGroup"/>
+                        <HBox fx:id="statusBox" alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS" styleClass="typecase-status">
+                            <padding>
+                                <Insets left="18.0"/>
+                            </padding>
+                            <children>
+                                <Label id="showHideLogs"/>
+                                <Label fx:id="statusMessage"/>
+                                <Pane HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="statusText"/>
+                            </children>
+                        </HBox>
                     </children>
                 </HBox>
-            </top>
+            </bottom>
         </BorderPane>
     </children>
 </AnchorPane>
-

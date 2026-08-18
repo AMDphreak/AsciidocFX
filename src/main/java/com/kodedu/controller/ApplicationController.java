@@ -154,6 +154,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     public ToggleButton workdirToggle;
     public ToggleButton recentToggle;
     public ToggleButton outlineToggle;
+    public ToggleButton xrefToggle;
     public ToggleButton previewSplitToggle;
     public ToggleButton toggleZenButton;
     public MenuButton exportMenu;
@@ -226,7 +227,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     private Stage markdownTableStage;
     public TreeView<Section> outlineTreeView;
 
-    private CopilotDock copilotDock = CopilotDock.RIGHT_OF_PREVIEW;
+    private CopilotDock copilotDock = CopilotDock.BOTTOM_OF_WINDOW;
     private Stage copilotFloatStage;
     private CopilotDropOverlay copilotDropOverlay;
     private EventHandler<MouseEvent> copilotDragMove;
@@ -427,6 +428,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         eventService.subscribe(DirectoryService.WORKING_DIRECTORY_UPDATE_EVENT, event -> {
             Path path = (Path) event.getData();
             getStage().setTitle(String.format("AsciidocFX - %s", path));
+            if (workingDirButton != null && path != null) {
+                workingDirButton.setText(path.toString());
+                workingDirButton.setTooltip(new Tooltip(path.toString()));
+            }
         });
     }
 
@@ -1599,13 +1604,11 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
         if (nonNull(previewDarkToggle)) {
             previewDarkToggle.setFocusTraversable(false);
-            previewDarkToggle.setText("");
             previewDarkToggle.selectedProperty().bindBidirectional(editorConfigBean.previewDarkProperty());
             syncPreviewDarkToggle();
         }
         if (nonNull(appThemeToggle)) {
             appThemeToggle.setFocusTraversable(false);
-            appThemeToggle.setText("");
             syncAppThemeToggle();
             appThemeToggle.setOnAction(event -> switchAppTheme(appThemeToggle.isSelected()));
         }
@@ -1619,6 +1622,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 directoryService.changeWorkigDir(IOHelper.getPath(newValue));
             }
         });
+        restoreMainDividers();
 
         stage.xProperty().addListener((observable, oldValue, newValue) -> {
             if (!stage.isMaximized() && !stage.isIconified()) {
@@ -2641,23 +2645,17 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     public void adjustSplitPane() {
-
-        final Toggle selectedToggle1 = leftToggleGroup == null ? null : leftToggleGroup.getSelectedToggle();
-        final Toggle selectedToggle2 = rightToggleGroup == null ? null : rightToggleGroup.getSelectedToggle();
-        if (nonNull(selectedToggle1)) {
-            ((ToggleButton) selectedToggle1).fire();
+        MyTab tab = current.currentTab();
+        if (tab != null) {
+            if (tab.isPreviewOnly()) {
+                if (toggleZenButton != null) {
+                    toggleZenButton.setSelected(true);
+                }
+            } else if (previewSplitToggle != null) {
+                previewSplitToggle.setSelected(true);
+            }
         }
-
-        if (nonNull(selectedToggle2)) {
-            ((ToggleButton) selectedToggle2).fire();
-        }
-
-        if (isNull(selectedToggle1) && nonNull(leftToggleGroup) && !leftToggleGroup.getToggles().isEmpty()) {
-            ((ToggleButton) leftToggleGroup.getToggles().get(0)).fire();
-        }
-        if (isNull(selectedToggle2) && nonNull(rightToggleGroup) && !rightToggleGroup.getToggles().isEmpty()) {
-            ((ToggleButton) rightToggleGroup.getToggles().get(0)).fire();
-        }
+        restoreMainDividers();
     }
 
     public void saveDoc() {
@@ -3078,46 +3076,50 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     @FXML
     public void toggleRecentView(ActionEvent actionEvent) {
         boolean selected = recentToggle != null && recentToggle.isSelected();
-        splitPane.setDividerPosition(0, selected ? 0.17 : 0);
+        if (selected && workdirToggle != null) {
+            workdirToggle.setSelected(false);
+        }
         if (selected) {
             leftShowerHider.showNode(recentListView);
         }
+        restoreMainDividers();
     }
 
     @FXML
     public void toggleWorkdirView(ActionEvent actionEvent) {
         boolean selected = workdirToggle != null && workdirToggle.isSelected();
-        splitPane.setDividerPosition(0, selected ? 0.17 : 0);
+        if (selected && recentToggle != null) {
+            recentToggle.setSelected(false);
+        }
         if (selected) {
             leftShowerHider.showDefaultNode();
         }
+        restoreMainDividers();
     }
 
+    @FXML
     public void toggleXrefView(ActionEvent actionEvent) {
-        applyOutlineVisibility(true);
-        if (outlineToggle != null) {
-            outlineToggle.setSelected(true);
-        }
-        MyTab tab = current.currentTab();
-        if (tab != null) {
-            tab.setOutlineVisible(true);
-        }
-        if (documentNavTabs != null && documentNavTabs.getTabs().size() > 1) {
+        boolean selected = xrefToggle != null && xrefToggle.isSelected();
+        if (selected && documentNavTabs != null && documentNavTabs.getTabs().size() > 1) {
             documentNavTabs.getSelectionModel().select(1);
         }
-        if (current.currentEditor() != null) {
+        if (selected && current.currentEditor() != null) {
             current.currentEditor().rerender();
         }
+        refreshDocumentNav();
     }
 
     @FXML
     public void toggleOutlineView(ActionEvent actionEvent) {
-        boolean selected = outlineToggle == null || outlineToggle.isSelected();
+        boolean selected = outlineToggle != null && outlineToggle.isSelected();
         MyTab tab = current.currentTab();
         if (tab != null) {
             tab.setOutlineVisible(selected);
         }
-        applyOutlineVisibility(selected);
+        if (selected && documentNavTabs != null) {
+            documentNavTabs.getSelectionModel().select(0);
+        }
+        refreshDocumentNav();
     }
 
     @FXML
@@ -3245,7 +3247,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
     }
 
     private void wireDocumentChrome() {
-        applyOutlineVisibility(outlineToggle == null || outlineToggle.isSelected());
+        refreshDocumentNav();
         if (workspaceFrame != null && copilotDropOverlay == null) {
             copilotDropOverlay = new CopilotDropOverlay();
             StackPane.setAlignment(copilotDropOverlay, Pos.CENTER);
@@ -3259,7 +3261,10 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         if (outlineToggle != null) {
             outlineToggle.setSelected(tab.isOutlineVisible());
         }
-        applyOutlineVisibility(tab.isOutlineVisible());
+        if (tab.isOutlineVisible() && documentNavTabs != null) {
+            documentNavTabs.getSelectionModel().select(0);
+        }
+        refreshDocumentNav();
         if (tab.isPreviewOnly()) {
             if (toggleZenButton != null) {
                 toggleZenButton.setSelected(true);
@@ -3273,13 +3278,24 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
         }
     }
 
-    private void applyOutlineVisibility(boolean visible) {
+    private void refreshDocumentNav() {
         if (documentNavTabs == null || documentSplitPane == null) {
             return;
         }
+        boolean mapOn = outlineToggle != null && outlineToggle.isSelected();
+        boolean xrefOn = xrefToggle != null && xrefToggle.isSelected();
+        boolean visible = mapOn || xrefOn;
         documentNavTabs.setVisible(visible);
         documentNavTabs.setManaged(visible);
         documentSplitPane.setDividerPosition(0, visible ? 0.22 : 0);
+        if (!visible || documentNavTabs.getTabs().size() < 2) {
+            return;
+        }
+        if (xrefOn && !mapOn) {
+            documentNavTabs.getSelectionModel().select(1);
+        } else if (mapOn && !xrefOn) {
+            documentNavTabs.getSelectionModel().select(0);
+        }
     }
 
     public CopilotDock getCopilotDock() {
@@ -3288,7 +3304,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
 
     public void dockCopilot(CopilotDock dock) {
         if (dock == null) {
-            dock = CopilotDock.RIGHT_OF_PREVIEW;
+            dock = CopilotDock.BOTTOM_OF_WINDOW;
         }
         this.copilotDock = dock;
         undockCopilotKeepToggle();
@@ -3323,7 +3339,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 if (copilotFloatStage == null) {
                     copilotFloatStage = new Stage();
                     copilotFloatStage.initOwner(stage);
-                    copilotFloatStage.setTitle("Copilot");
+                    copilotFloatStage.setTitle("Ask");
                     copilotFloatStage.setOnCloseRequest(event -> {
                         if (toggleCopilotButton != null) {
                             toggleCopilotButton.setSelected(false);
@@ -3333,7 +3349,12 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 }
                 Scene floatScene = copilotPanel.getScene();
                 if (floatScene == null || floatScene.getRoot() != copilotPanel) {
-                    copilotFloatStage.setScene(new Scene(copilotPanel, 420, 640));
+                    Scene askScene = new Scene(copilotPanel, 420, 640);
+                    if (scene != null) {
+                        askScene.getStylesheets().setAll(scene.getStylesheets());
+                        askScene.setFill(scene.getFill());
+                    }
+                    copilotFloatStage.setScene(askScene);
                 }
                 copilotFloatStage.show();
                 copilotFloatStage.toFront();
@@ -3432,16 +3453,19 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             splitPane.setDividerPositions(collapsed);
             return;
         }
+        boolean libraryOpen = (workdirToggle != null && workdirToggle.isSelected())
+                || (recentToggle != null && recentToggle.isSelected());
+        double left = libraryOpen ? 0.20 : 0;
         int copilotIdx = items.indexOf(copilotPanel);
         if (copilotIdx == 1 && n >= 4) {
-            splitPane.setDividerPositions(0.15, 0.36, 0.72);
+            splitPane.setDividerPositions(left, libraryOpen ? 0.36 : 0.22, 0.72);
             return;
         }
         if (copilotIdx == n - 1 && n >= 4) {
-            splitPane.setDividerPositions(0.15, 0.48, 0.74);
+            splitPane.setDividerPositions(left, libraryOpen ? 0.48 : 0.50, 0.74);
             return;
         }
-        splitPane.setDividerPositions(0.17, 0.59);
+        splitPane.setDividerPositions(left, 0.52);
     }
 
     private void switchAppTheme(boolean dark) {
@@ -3474,9 +3498,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
                 .map(t -> "Dark".equalsIgnoreCase(t.getThemeName()))
                 .orElse(true);
         appThemeToggle.setSelected(dark);
-        if (appThemeToggle.getGraphic() instanceof FontIcon icon) {
-            icon.setIconLiteral(dark ? "fa-moon-o" : "fa-sun-o");
-        }
+        appThemeToggle.setText(dark ? "Night" : "Day");
     }
 
     public void setHostServices(HostServices hostServices) {
@@ -3651,9 +3673,7 @@ public class ApplicationController extends TextWebSocketHandler implements Initi
             return;
         }
         boolean dark = editorConfigBean.isPreviewDark();
-        if (previewDarkToggle.getGraphic() instanceof FontIcon icon) {
-            icon.setIconLiteral(dark ? "fa-moon-o" : "fa-sun-o");
-        }
+        previewDarkToggle.setText(dark ? "Ink" : "Paper");
     }
 
     public void setAsciidocTableScene(Scene asciidocTableScene) {
